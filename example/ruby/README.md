@@ -8,6 +8,14 @@
 
         $ gem install sdl2-bindings
 
+## Usage ##
+
+    $ ruby applications.rb
+
+*   'N' : Next sample
+*   'P' : Previous sample
+*   'Esc' : Quit
+
 ## License information ##
 
 *   libbgfx-shared-libDebug.dylib, libbgfx-shared-libRelease.dylib
