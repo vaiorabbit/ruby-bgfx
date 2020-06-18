@@ -63,7 +63,7 @@ class Application
     pd[:context]      = nil
     pd[:backBuffer]   = nil
     pd[:backBufferDS] = nil
-    Bgfx::bgfx_set_platform_data(pd)
+    Bgfx::set_platform_data(pd)
 
     @imgui_ctx = ImGui::CreateContext()
     if @imgui_ctx == nil
@@ -137,7 +137,7 @@ class Application
           when SDL_WINDOWEVENT_RESIZED
             width_current = event[:window][:data1]
             height_current = event[:window][:data2]
-            Bgfx::bgfx_reset(width_current, height_current, Bgfx::Reset_None, Bgfx::TextureFormat::Count)
+            Bgfx::reset(width_current, height_current, Bgfx::Reset_None, Bgfx::TextureFormat::Count)
             window_width = width_current
             window_height = height_current
           end

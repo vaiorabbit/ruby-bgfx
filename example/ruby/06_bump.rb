@@ -29,12 +29,12 @@ class Sample06 < Sample
     def self.init()
       if @@ms_layout == nil
         @@ms_layout = Bgfx_vertex_layout_t.new
-        Bgfx::bgfx_vertex_layout_begin(@@ms_layout, Bgfx::RendererType::Noop)
-        Bgfx::bgfx_vertex_layout_add(@@ms_layout, Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float, false, false)
-        Bgfx::bgfx_vertex_layout_add(@@ms_layout, Bgfx::Attrib::Normal, 4, Bgfx::AttribType::Uint8, true, true)
-        Bgfx::bgfx_vertex_layout_add(@@ms_layout, Bgfx::Attrib::Tangent, 4, Bgfx::AttribType::Uint8, true, true)
-        Bgfx::bgfx_vertex_layout_add(@@ms_layout, Bgfx::Attrib::TexCoord0, 2, Bgfx::AttribType::Int16, true, true)
-        Bgfx::bgfx_vertex_layout_end(@@ms_layout)
+        @@ms_layout.begin(Bgfx::RendererType::Noop)
+        @@ms_layout.add(Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float, false, false)
+        @@ms_layout.add(Bgfx::Attrib::Normal, 4, Bgfx::AttribType::Uint8, true, true)
+        @@ms_layout.add(Bgfx::Attrib::Tangent, 4, Bgfx::AttribType::Uint8, true, true)
+        @@ms_layout.add(Bgfx::Attrib::TexCoord0, 2, Bgfx::AttribType::Int16, true, true)
+        @@ms_layout.end
       end
     end
   end
@@ -122,33 +122,33 @@ class Sample06 < Sample
     init[:limits][:maxEncoders] = 1
     init[:limits][:transientVbSize] = 6<<20
     init[:limits][:transientIbSize] = 2<<20
-    bgfx_init_success = Bgfx::bgfx_init(init)
+    bgfx_init_success = Bgfx::init(init)
     $stderr.puts("Failed to initialize Bgfx") unless bgfx_init_success
 
     ImGui::ImplBgfx_Init()
 
-    Bgfx::bgfx_set_debug(debug)
-    Bgfx::bgfx_set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
+    Bgfx::set_debug(debug)
+    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
 
     PosNormalTangentTexcoordVertex.init()
 
     BgfxUtils.calc_tangents(@@s_cubeVertices, @@s_cubeVertices.size / @@s_cubeVertices.type_size, PosNormalTangentTexcoordVertex.ms_layout, @@cubeIndicesSrc)
 
-    @m_vbh = Bgfx::bgfx_create_vertex_buffer(
-      Bgfx::bgfx_make_ref(@@s_cubeVertices, @@s_cubeVertices.size),
+    @m_vbh = Bgfx::create_vertex_buffer(
+      Bgfx::make_ref(@@s_cubeVertices, @@s_cubeVertices.size),
       PosNormalTangentTexcoordVertex.ms_layout,
       Bgfx::Buffer_None
     )
 
-    @m_ibh = Bgfx::bgfx_create_index_buffer(
-      Bgfx::bgfx_make_ref(@@s_cubeIndices, @@s_cubeIndices.size),
+    @m_ibh = Bgfx::create_index_buffer(
+      Bgfx::make_ref(@@s_cubeIndices, @@s_cubeIndices.size),
       Bgfx::Buffer_None
     )
 
-    @s_texColor  = Bgfx::bgfx_create_uniform("s_texColor",  Bgfx::UniformType::Sampler, -1)
-    @s_texNormal = Bgfx::bgfx_create_uniform("s_texNormal", Bgfx::UniformType::Sampler, -1)
-    @u_lightPosRadius = Bgfx::bgfx_create_uniform("u_lightPosRadius", Bgfx::UniformType::Vec4, @m_numLights)
-    @u_lightRgbInnerR = Bgfx::bgfx_create_uniform("u_lightRgbInnerR", Bgfx::UniformType::Vec4, @m_numLights)
+    @s_texColor  = Bgfx::create_uniform("s_texColor",  Bgfx::UniformType::Sampler, -1)
+    @s_texNormal = Bgfx::create_uniform("s_texNormal", Bgfx::UniformType::Sampler, -1)
+    @u_lightPosRadius = Bgfx::create_uniform("u_lightPosRadius", Bgfx::UniformType::Vec4, @m_numLights)
+    @u_lightRgbInnerR = Bgfx::create_uniform("u_lightRgbInnerR", Bgfx::UniformType::Vec4, @m_numLights)
     @m_textureColor = BgfxUtils.load_texture("textures/fieldstone-rgba.dds")
     @m_textureNormal = BgfxUtils.load_texture("textures/fieldstone-n.dds")
 
@@ -167,18 +167,18 @@ class Sample06 < Sample
   def teardown()
     ImGui::ImplBgfx_Shutdown()
 
-    Bgfx::bgfx_destroy_uniform(@s_texColor) if @s_texColor
-    Bgfx::bgfx_destroy_uniform(@s_texNormal) if @s_texNormal
-    Bgfx::bgfx_destroy_uniform(@u_lightPosRadius) if @u_lightPosRadius
-    Bgfx::bgfx_destroy_uniform(@u_lightRgbInnerR) if @u_lightRgbInnerR
-    Bgfx::bgfx_destroy_texture(@m_textureNormal) if @m_textureNormal
-    Bgfx::bgfx_destroy_texture(@m_textureColor) if @m_textureColor
+    Bgfx::destroy_uniform(@s_texColor) if @s_texColor
+    Bgfx::destroy_uniform(@s_texNormal) if @s_texNormal
+    Bgfx::destroy_uniform(@u_lightPosRadius) if @u_lightPosRadius
+    Bgfx::destroy_uniform(@u_lightRgbInnerR) if @u_lightRgbInnerR
+    Bgfx::destroy_texture(@m_textureNormal) if @m_textureNormal
+    Bgfx::destroy_texture(@m_textureColor) if @m_textureColor
 
-    Bgfx::bgfx_destroy_program(@m_program) if @m_program
-    Bgfx::bgfx_destroy_vertex_buffer(@m_vbh) if @m_vbh
-    Bgfx::bgfx_destroy_index_buffer(@m_ibh) if @m_ibh
+    Bgfx::destroy_program(@m_program) if @m_program
+    Bgfx::destroy_vertex_buffer(@m_vbh) if @m_vbh
+    Bgfx::destroy_index_buffer(@m_ibh) if @m_ibh
 
-    Bgfx::bgfx_shutdown()
+    Bgfx::shutdown()
 
     super()
   end
@@ -191,7 +191,7 @@ class Sample06 < Sample
     ret = super(dt)
     @time += dt
 
-    Bgfx::bgfx_reset(@window_width, @window_height, @reset, Bgfx::TextureFormat::Count)
+    Bgfx::reset(@window_width, @window_height, @reset, Bgfx::TextureFormat::Count)
 
     ImGui::NewFrame()
     ImGui::PushFont(ImGui::ImplBgfx_GetFont())
@@ -200,9 +200,9 @@ class Sample06 < Sample
     ImGui::Render()
     ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 
-    Bgfx::bgfx_set_view_transform(0, @view, @proj)
-    Bgfx::bgfx_set_view_rect(0, 0, 0, @window_width, @window_height)
-    Bgfx::bgfx_touch(0)
+    Bgfx::set_view_transform(0, @view, @proj)
+    Bgfx::set_view_rect(0, 0, 0, @window_width, @window_height)
+    Bgfx::touch(0)
 
     light_pos_radius = Array.new(4) { Array.new(4, 0.0) }
     @m_numLights.times do |ii|
@@ -212,7 +212,7 @@ class Sample06 < Sample
       light_pos_radius[ii][3] = 3.0
     end
 
-    Bgfx::bgfx_set_uniform(@u_lightPosRadius, light_pos_radius.flatten!.pack("F16"), @m_numLights)
+    Bgfx::set_uniform(@u_lightPosRadius, light_pos_radius.flatten!.pack("F16"), @m_numLights)
 
     light_rgb_inner_r = [
       [ 1.0, 0.7, 0.2, 0.8 ],
@@ -221,7 +221,7 @@ class Sample06 < Sample
       [ 1.0, 0.4, 0.2, 0.8 ],
     ]
 
-    Bgfx::bgfx_set_uniform(@u_lightRgbInnerR, light_rgb_inner_r.flatten!.pack("F16"), @m_numLights)
+    Bgfx::set_uniform(@u_lightRgbInnerR, light_rgb_inner_r.flatten!.pack("F16"), @m_numLights)
 
     state = 0 | Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Msaa
 
@@ -229,18 +229,18 @@ class Sample06 < Sample
       3.times do |xx|
         mtxTransform = RMtx4.new.translation(-3.0 + xx * 3.0, -3.0 + yy * 3.0, 0.0) * RMtx4.new.rotationY(@time * 0.03 + yy * 0.37) * RMtx4.new.rotationX(@time * 0.23 + xx * 0.21)
         mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(mtxTransform.to_a)
-        Bgfx::bgfx_set_transform(mtx, 1)
-        Bgfx::bgfx_set_vertex_buffer(0, @m_vbh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::bgfx_set_index_buffer(@m_ibh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::bgfx_set_texture(0, @s_texColor,  @m_textureColor, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::bgfx_set_texture(1, @s_texNormal, @m_textureNormal, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::bgfx_set_state(state, 0)
+        Bgfx::set_transform(mtx, 1)
+        Bgfx::set_vertex_buffer(0, @m_vbh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
+        Bgfx::set_index_buffer(@m_ibh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
+        Bgfx::set_texture(0, @s_texColor,  @m_textureColor, 0xffffffff) # 0xffffffff == UINT32_MAX
+        Bgfx::set_texture(1, @s_texNormal, @m_textureNormal, 0xffffffff) # 0xffffffff == UINT32_MAX
+        Bgfx::set_state(state, 0)
 
-        Bgfx::bgfx_submit(0, @m_program, 0, Bgfx::Discard_All)
+        Bgfx::submit(0, @m_program, 0, Bgfx::Discard_All)
       end
     end
 
-    Bgfx::bgfx_frame(false)
+    Bgfx::frame(false)
 
     return ret
   end

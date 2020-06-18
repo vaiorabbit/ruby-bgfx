@@ -25,12 +25,12 @@ class Sample00 < Sample
     init[:limits][:maxEncoders] = 1
     init[:limits][:transientVbSize] = 6<<20
     init[:limits][:transientIbSize] = 2<<20
-    bgfx_init_success = Bgfx::bgfx_init(init)
+    bgfx_init_success = Bgfx::init(init)
     $stderr.puts("Failed to initialize Bgfx") unless bgfx_init_success
     ImGui::ImplBgfx_Init()
 
-    Bgfx::bgfx_set_debug(debug)
-    Bgfx::bgfx_set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
+    Bgfx::set_debug(debug)
+    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
 
     @eye.setElements(0.0, 0.0, -7.0)
     @at.setElements(0.0, 0.0, 0.0)
@@ -44,7 +44,7 @@ class Sample00 < Sample
 
   def teardown()
     ImGui::ImplBgfx_Shutdown()
-    Bgfx::bgfx_shutdown()
+    Bgfx::shutdown()
     super()
   end
 
@@ -63,14 +63,14 @@ class Sample00 < Sample
     # ImGui::Render()
     # ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 
-    Bgfx::bgfx_reset(@window_width, @window_height, @reset, Bgfx::TextureFormat::Count)
+    Bgfx::reset(@window_width, @window_height, @reset, Bgfx::TextureFormat::Count)
 
-    Bgfx::bgfx_set_view_transform(0, @view, @proj)
-    Bgfx::bgfx_set_view_rect(0, 0, 0, @window_width, @window_height)
-    Bgfx::bgfx_touch(0)
+    Bgfx::set_view_transform(0, @view, @proj)
+    Bgfx::set_view_rect(0, 0, 0, @window_width, @window_height)
+    Bgfx::touch(0)
 
-    Bgfx::bgfx_dbg_text_clear(0, false)
-    Bgfx::bgfx_dbg_text_image(
+    Bgfx::dbg_text_clear(0, false)
+    Bgfx::dbg_text_image(
       [@window_width /2/8, 20].max - 20,
       [@window_height /2/16, 6].max - 6,
       40,
@@ -79,11 +79,11 @@ class Sample00 < Sample
       160
     )
 
-    Bgfx::bgfx_dbg_text_printf(0, 0, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.")
-    Bgfx::bgfx_dbg_text_printf(0, 1, 0x0f, "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; 5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m")
-    Bgfx::bgfx_dbg_text_printf(0, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m")
+    Bgfx::dbg_text_printf(0, 0, 0x0f, "Color can be changed with ANSI \x1b[9;me\x1b[10;ms\x1b[11;mc\x1b[12;ma\x1b[13;mp\x1b[14;me\x1b[0m code too.")
+    Bgfx::dbg_text_printf(0, 1, 0x0f, "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; 5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m")
+    Bgfx::dbg_text_printf(0, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m")
 
-    Bgfx::bgfx_frame(false)
+    Bgfx::frame(false)
 
     return ret
   end

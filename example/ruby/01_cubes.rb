@@ -27,10 +27,10 @@ class Sample01 < Sample
       if @@ms_layout == nil
         @@ms_layout = Bgfx_vertex_layout_t.new
 
-        Bgfx::bgfx_vertex_layout_begin(@@ms_layout, Bgfx::RendererType::Noop)
-        Bgfx::bgfx_vertex_layout_add(@@ms_layout, Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float, false, false)
-        Bgfx::bgfx_vertex_layout_add(@@ms_layout, Bgfx::Attrib::Color0, 4, Bgfx::AttribType::Uint8, true, false)
-        Bgfx::bgfx_vertex_layout_end(@@ms_layout)
+        @@ms_layout.begin(Bgfx::RendererType::Noop)
+        @@ms_layout.add(Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float, false, false)
+        @@ms_layout.add(Bgfx::Attrib::Color0, 4, Bgfx::AttribType::Uint8, true, false)
+        @@ms_layout.end
       end
     end
   end
@@ -155,41 +155,41 @@ class Sample01 < Sample
     init[:limits][:maxEncoders] = 1
     init[:limits][:transientVbSize] = 6<<20
     init[:limits][:transientIbSize] = 2<<20
-    bgfx_init_success = Bgfx::bgfx_init(init)
+    bgfx_init_success = Bgfx::init(init)
     $stderr.puts("Failed to initialize Bgfx") unless bgfx_init_success
 
     ImGui::ImplBgfx_Init()
 
-    Bgfx::bgfx_set_debug(debug)
-    Bgfx::bgfx_set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
+    Bgfx::set_debug(debug)
+    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
 
     PosColorVertex.init()
 
-    @m_vbh = Bgfx::bgfx_create_vertex_buffer(
-      Bgfx::bgfx_make_ref(@@s_cubeVertices, @@s_cubeVertices.size),
+    @m_vbh = Bgfx::create_vertex_buffer(
+      Bgfx::make_ref(@@s_cubeVertices, @@s_cubeVertices.size),
       PosColorVertex.ms_layout,
       Bgfx::Buffer_None
     )
 
     @m_ibh = []
-    @m_ibh[0] = Bgfx::bgfx_create_index_buffer(
-      Bgfx::bgfx_make_ref(@@s_cubeTriList, @@s_cubeTriList.size),
+    @m_ibh[0] = Bgfx::create_index_buffer(
+      Bgfx::make_ref(@@s_cubeTriList, @@s_cubeTriList.size),
       Bgfx::Buffer_None
     )
-    @m_ibh[1] = Bgfx::bgfx_create_index_buffer(
-      Bgfx::bgfx_make_ref(@@s_cubeTriStrip, @@s_cubeTriStrip.size),
+    @m_ibh[1] = Bgfx::create_index_buffer(
+      Bgfx::make_ref(@@s_cubeTriStrip, @@s_cubeTriStrip.size),
       Bgfx::Buffer_None
     )
-    @m_ibh[2] = Bgfx::bgfx_create_index_buffer(
-      Bgfx::bgfx_make_ref(@@s_cubeLineList, @@s_cubeLineList.size),
+    @m_ibh[2] = Bgfx::create_index_buffer(
+      Bgfx::make_ref(@@s_cubeLineList, @@s_cubeLineList.size),
       Bgfx::Buffer_None
     )
-    @m_ibh[3] = Bgfx::bgfx_create_index_buffer(
-      Bgfx::bgfx_make_ref(@@s_cubeLineStrip, @@s_cubeLineStrip.size),
+    @m_ibh[3] = Bgfx::create_index_buffer(
+      Bgfx::make_ref(@@s_cubeLineStrip, @@s_cubeLineStrip.size),
       Bgfx::Buffer_None
     )
-    @m_ibh[4] = Bgfx::bgfx_create_index_buffer(
-      Bgfx::bgfx_make_ref(@@s_cubePoints, @@s_cubePoints.size),
+    @m_ibh[4] = Bgfx::create_index_buffer(
+      Bgfx::make_ref(@@s_cubePoints, @@s_cubePoints.size),
       Bgfx::Buffer_None
     )
 
@@ -208,12 +208,12 @@ class Sample01 < Sample
   def teardown()
     ImGui::ImplBgfx_Shutdown()
 
-    Bgfx::bgfx_destroy_program(@m_program) if @m_program
-    Bgfx::bgfx_destroy_vertex_buffer(@m_vbh) if @m_vbh
+    Bgfx::destroy_program(@m_program) if @m_program
+    Bgfx::destroy_vertex_buffer(@m_vbh) if @m_vbh
     @m_ibh.each do |ibh|
-      Bgfx::bgfx_destroy_index_buffer(ibh) if ibh
+      Bgfx::destroy_index_buffer(ibh) if ibh
     end
-    Bgfx::bgfx_shutdown()
+    Bgfx::shutdown()
 
     super()
   end
@@ -226,7 +226,7 @@ class Sample01 < Sample
     ret = super(dt)
     @time += dt
 
-    Bgfx::bgfx_reset(@window_width, @window_height, @reset, Bgfx::TextureFormat::Count)
+    Bgfx::reset(@window_width, @window_height, @reset, Bgfx::TextureFormat::Count)
 
     # ImGui::NewFrame()
     # ImGui::PushFont(ImGui::ImplBgfx_GetFont())
@@ -235,9 +235,9 @@ class Sample01 < Sample
     # ImGui::Render()
     # ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 
-    Bgfx::bgfx_set_view_transform(0, @view, @proj)
-    Bgfx::bgfx_set_view_rect(0, 0, 0, @window_width, @window_height)
-    Bgfx::bgfx_touch(0)
+    Bgfx::set_view_transform(0, @view, @proj)
+    Bgfx::set_view_rect(0, 0, 0, @window_width, @window_height)
+    Bgfx::touch(0)
 
     ibh = @m_ibh[0] # TODO use enum
     state = 0 | Bgfx::State_Write_R | Bgfx::State_Write_G | Bgfx::State_Write_B | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Cw | Bgfx::State_Msaa | @@s_ptState[0] # TODO use enum
@@ -248,16 +248,16 @@ class Sample01 < Sample
       11.times do |xx|
         mtx_transform = mtx_t.translation(-15.0 + xx * 3.0, -15.0 + yy * 3.0, 0.0) * mtx_ry.rotationY(@time + yy * 0.37) * mtx_rx.rotationX(@time + xx * 0.21)
         xfrm.write_array_of_float(mtx_transform.to_a)
-        Bgfx::bgfx_set_transform(xfrm, 1)
-        Bgfx::bgfx_set_vertex_buffer(0, @m_vbh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::bgfx_set_index_buffer(ibh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::bgfx_set_state(state, 0)
+        Bgfx::set_transform(xfrm, 1)
+        Bgfx::set_vertex_buffer(0, @m_vbh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
+        Bgfx::set_index_buffer(ibh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
+        Bgfx::set_state(state, 0)
 
-        Bgfx::bgfx_submit(0, @m_program, 0, Bgfx::Discard_All)
+        Bgfx::submit(0, @m_program, 0, Bgfx::Discard_All)
       end
     end
 
-    Bgfx::bgfx_frame(false)
+    Bgfx::frame(false)
 
   end
 

@@ -45,8 +45,9 @@ $structs
 #
 module Bgfx
     def self.import_symbols()
-        $funcs
+        $attachfuncs
     end # self.import_symbols()
+    $modulefuncs
 end # module Bgfx
 
 if __FILE__ == $0
@@ -69,6 +70,7 @@ local yield = coroutine.yield
 local indent = ""
 
 local typedefs_list = {}
+local methods_list = {}
 
 ----------------------------------------------------------------------------------------------------
 
@@ -115,9 +117,21 @@ function generate(tmp, idl_info, conv)
 end
 
 function gen.gen()
-   -- 1st pass : Collect typedef information
+   -- 1st pass : Collect typedef/method information
    for _, object in ipairs(idl["types"]) do
       local co = coroutine.create(collect_typedefs_list)
+      local any
+      while true do
+         local ok, v = coroutine.resume(co, object)
+         assert(ok, debug.traceback(co, v))
+         if not v then
+            break
+         end
+      end
+   end
+
+   for _, object in ipairs(idl["funcs"]) do
+      local co = coroutine.create(collect_methods_list)
       local any
       while true do
          local ok, v = coroutine.resume(co, object)
@@ -143,9 +157,16 @@ function gen.gen()
                                       -- Typedefs
                                       generate(tmp, idl["types"], converter["typedefs"])
                                       return table.concat(tmp, "\n")
-                                   else
-                                      -- Enums, Functions
-                                      generate(tmp, idl[what], converter[what])
+                                   elseif what == "types" then
+                                      generate(tmp, idl["types"], converter["types"])
+                                      return table.concat(tmp, "\n\t")
+                                   elseif what == "attachfuncs" then
+                                      -- Raw functions
+                                      generate(tmp, idl["funcs"], converter["attach_funcs"])
+                                      return table.concat(tmp, "\n\t")
+                                   elseif what == "modulefuncs" then
+                                      -- Raw functions wrapper
+                                      generate(tmp, idl["funcs"], converter["module_funcs"])
                                       return table.concat(tmp, "\n\t")
                                    end
    end)
@@ -269,6 +290,14 @@ end
 
 ----------------------------------------------------------------------------------------------------
 
+function collect_methods_list(func)
+   if func.this ~= nil then
+      table.insert(methods_list, func)
+   end
+end
+
+----------------------------------------------------------------------------------------------------
+
 function converter.handles(typ)
    -- Build handle definitions
    if typ.handle then
@@ -283,9 +312,11 @@ end
 function converter.structs(typ)
    -- Build forward declarations
    if typ.struct ~= nil then
-      yield("class " .. typ.cname:gsub("^%l", string.upper) .. " < FFI::Struct")
-      yield("\tlayout(")
+	  class_name = typ.cname:gsub("^%l", string.upper)
+      yield("class " .. class_name .. " < FFI::Struct")
 
+      -- Member variables
+      yield("\tlayout(")
       for idx, member in ipairs(typ.struct) do
          local comments = ""
          if member.comment ~= nil then
@@ -309,6 +340,25 @@ function converter.structs(typ)
       end
 
       yield("\t)")
+
+      -- Instance methods
+	  struct_name_key = typ.cname:gsub("^bgfx_", ""):gsub("_t$", "") .. "_"
+	  -- print(struct_name_key)
+	  for _, func in ipairs(methods_list) do
+		 -- print(_, func.cname)
+		 if string.match(func.cname, "^" .. struct_name_key) ~= nil then
+			method_name = func.cname:gsub("^" .. struct_name_key, "")
+
+			local args = {}
+			for _, arg in ipairs(func.args) do
+			   table.insert(args, arg.name)
+			end
+
+			yield("\tdef " .. method_name .. "(" .. table.concat(args, ", ") .. ")")
+			yield("\t\tBgfx::bgfx_" .. func.cname .. "(self, " .. table.concat(args, ", ") .. ")")
+			yield("\tend")
+		 end
+	  end
       yield("end")
    end
 end
@@ -326,7 +376,7 @@ function converter.types(typ)
                yield("\t# " .. comment)
             end
          end
-         yield("\t" .. enum.name .. " = " .. idx - 1 ..  ",")
+         yield("\t" .. enum.name .. " = " .. idx - 1)
       end
       yield("\n\t\tCount = " .. #typ.enum)
       yield("end # module " .. typ.typename)
@@ -409,47 +459,47 @@ end
 
 ----------------------------------------------------------------------------------------------------
 
-function converter.funcs(func)
+function converter.attach_funcs(func)
 
     if func.cpponly then
         return
     end
 
-    if func.comments ~= nil then
-       -- comments
-        yield("\t#")
-        for _, line in ipairs(func.comments) do
-            local line = line:gsub("@remarks", "Remarks:")
-            line = line:gsub("@remark", "Remarks:")
-            line = line:gsub("@(%l)(%l+)", function(a, b) return a:upper()..b..":" end)
-            yield("\t# " .. line)
-        end
+    -- if func.comments ~= nil then
+    --    -- comments
+    --     yield("\t#")
+    --     for _, line in ipairs(func.comments) do
+    --         local line = line:gsub("@remarks", "Remarks:")
+    --         line = line:gsub("@remark", "Remarks:")
+    --         line = line:gsub("@(%l)(%l+)", function(a, b) return a:upper()..b..":" end)
+    --         yield("\t# " .. line)
+    --     end
 
-        local hasParamsComments = false
-        for _, arg in ipairs(func.args) do
-            if arg.comment ~= nil then
-                hasParamsComments = true
-                break
-            end
-        end
+    --     local hasParamsComments = false
+    --     for _, arg in ipairs(func.args) do
+    --         if arg.comment ~= nil then
+    --             hasParamsComments = true
+    --             break
+    --         end
+    --     end
 
-        if hasParamsComments then
-            yield("\t# Params:")
-        end
+    --     if hasParamsComments then
+    --         yield("\t# Params:")
+    --     end
 
-        for _, arg in ipairs(func.args) do
-            if arg.comment ~= nil then
-                yield("\t# " .. convert_name(arg.name) .. " = " .. arg.comment[1])
-                for i, comment in ipairs(arg.comment) do
-                    if (i > 1) then
-                        yield("\t# " .. comment)
-                    end
-                end
-            end
-        end
+    --     for _, arg in ipairs(func.args) do
+    --         if arg.comment ~= nil then
+    --             yield("\t# " .. convert_name(arg.name) .. " = " .. arg.comment[1])
+    --             for i, comment in ipairs(arg.comment) do
+    --                 if (i > 1) then
+    --                     yield("\t# " .. comment)
+    --                 end
+    --             end
+    --         end
+    --     end
 
-        yield("\t#")
-    end
+    --     yield("\t#")
+    -- end
 
     -- codes
     local args = {}
@@ -472,6 +522,71 @@ function converter.funcs(func)
        yield("\tattach_function " .. entry_point .. ", " .. entry_point .. ", [" .. table.concat(args, ", ") .. "], " .. convert_type(func.ret))
 
     end
+end
+
+----------------------------------------------------------------------------------------------------
+
+function converter.module_funcs(func)
+
+   if func.cpponly then
+      return
+   end
+
+   if func.this ~= nil then
+   	  return
+   end
+
+   if func.comments ~= nil then
+      -- comments
+      yield("#")
+      for _, line in ipairs(func.comments) do
+         local line = line:gsub("@remarks", "Remarks:")
+         line = line:gsub("@remark", "Remarks:")
+         line = line:gsub("@(%l)(%l+)", function(a, b) return a:upper()..b..":" end)
+         yield("# " .. line)
+      end
+
+      local hasParamsComments = false
+      for _, arg in ipairs(func.args) do
+         if arg.comment ~= nil then
+            hasParamsComments = true
+            break
+         end
+      end
+
+      if hasParamsComments then
+         yield("# Params:")
+      end
+
+      for _, arg in ipairs(func.args) do
+         if arg.comment ~= nil then
+            yield("# " .. convert_name(arg.name) .. " = " .. arg.comment[1])
+            for i, comment in ipairs(arg.comment) do
+               if (i > 1) then
+                  yield("# " .. comment)
+               end
+            end
+         end
+      end
+
+      yield("#")
+   end
+
+   -- if func.this ~= nil then
+   -- 	  print(func.cname)
+   -- end
+   -- codes
+   local args = {}
+   for _, arg in ipairs(func.args) do
+      table.insert(args, arg.name)
+   end
+   -- for func.dbgTextPrintf { vararg = "dbgTextPrintfVargs" }. Explicitly replace last element with *varargs, or we got empty last argument
+   if func.vararg ~= nil then
+      args[#args] = "*vargargs"
+   end
+
+   entry_point = "bgfx_" .. func.cname
+   yield("def self." .. func.cname .. "(" .. table.concat(args, ", ") .. "); return " .. entry_point .. "(" .. table.concat(args, ", ") .. "); end")
 end
 
 ----------------------------------------------------------------------------------------------------
