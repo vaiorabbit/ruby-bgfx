@@ -1671,7 +1671,7 @@ module Bgfx
 	# _data = Destination vertex stream where data will be packed.
 	# _index = Vertex index that will be modified.
 	#
-	def self.vertex_pack(_input, _inputNormalized, _attr, _layout, _data, _index); return bgfx_vertex_pack(_input, _inputNormalized, _attr, _layout, _data, _index); end
+	def self.vertex_pack(_input, _inputNormalized, _attr, _layout, _data, _index = 0); return bgfx_vertex_pack(_input, _inputNormalized, _attr, _layout, _data, _index); end
 	
 	#
 	# Unpack vertex attribute from vertex stream format.
@@ -1682,7 +1682,7 @@ module Bgfx
 	# _data = Source vertex stream from where data will be unpacked.
 	# _index = Vertex index that will be unpacked.
 	#
-	def self.vertex_unpack(_output, _attr, _layout, _data, _index); return bgfx_vertex_unpack(_output, _attr, _layout, _data, _index); end
+	def self.vertex_unpack(_output, _attr, _layout, _data, _index = 0); return bgfx_vertex_unpack(_output, _attr, _layout, _data, _index); end
 	
 	#
 	# Converts vertex stream data from one vertex stream format to another.
@@ -1693,7 +1693,7 @@ module Bgfx
 	# _srcData = Source vertex stream data.
 	# _num = Number of vertices to convert from source to destination.
 	#
-	def self.vertex_convert(_dstLayout, _dstData, _srcLayout, _srcData, _num); return bgfx_vertex_convert(_dstLayout, _dstData, _srcLayout, _srcData, _num); end
+	def self.vertex_convert(_dstLayout, _dstData, _srcLayout, _srcData, _num = 1); return bgfx_vertex_convert(_dstLayout, _dstData, _srcLayout, _srcData, _num); end
 	
 	#
 	# Weld vertices.
@@ -1705,7 +1705,7 @@ module Bgfx
 	# _num = Number of vertices in vertex stream.
 	# _epsilon = Error tolerance for vertex position comparison.
 	#
-	def self.weld_vertices(_output, _layout, _data, _num, _epsilon); return bgfx_weld_vertices(_output, _layout, _data, _num, _epsilon); end
+	def self.weld_vertices(_output, _layout, _data, _num, _epsilon = 0.001); return bgfx_weld_vertices(_output, _layout, _data, _num, _epsilon); end
 	
 	#
 	# Convert index buffer for use with different primitive topologies.
@@ -1748,7 +1748,7 @@ module Bgfx
 	# _max = Maximum number of elements in _enum array.
 	# _enum = Array where supported renderers will be written.
 	#
-	def self.get_supported_renderers(_max, _enum); return bgfx_get_supported_renderers(_max, _enum); end
+	def self.get_supported_renderers(_max = 0, _enum = nil); return bgfx_get_supported_renderers(_max, _enum); end
 	
 	#
 	# Returns name of renderer.
@@ -1792,7 +1792,7 @@ module Bgfx
 	#   - `BGFX_RESET_SRGB_BACKBUFFER` - Enable sRGB backbuffer.
 	# _format = Texture format. See: `TextureFormat::Enum`.
 	#
-	def self.reset(_width, _height, _flags, _format); return bgfx_reset(_width, _height, _flags, _format); end
+	def self.reset(_width, _height, _flags = Bgfx::Reset_None, _format = Bgfx::TextureFormat::Count); return bgfx_reset(_width, _height, _flags, _format); end
 	
 	#
 	# Advance to next frame. When using multithreaded renderer, this call
@@ -1801,7 +1801,7 @@ module Bgfx
 	# Params:
 	# _capture = Capture frame with graphics debugger.
 	#
-	def self.frame(_capture); return bgfx_frame(_capture); end
+	def self.frame(_capture = false); return bgfx_frame(_capture); end
 	
 	#
 	# Returns current renderer backend API type.
@@ -1866,7 +1866,7 @@ module Bgfx
 	# _releaseFn = Callback function to release memory after use.
 	# _userData = User data to be passed to callback function.
 	#
-	def self.make_ref_release(_data, _size, _releaseFn, _userData); return bgfx_make_ref_release(_data, _size, _releaseFn, _userData); end
+	def self.make_ref_release(_data, _size, _releaseFn = nil, _userData = nil); return bgfx_make_ref_release(_data, _size, _releaseFn, _userData); end
 	
 	#
 	# Set debug flags.
@@ -1889,7 +1889,7 @@ module Bgfx
 	# _attr = Background color.
 	# _small = Default 8x16 or 8x8 font.
 	#
-	def self.dbg_text_clear(_attr, _small); return bgfx_dbg_text_clear(_attr, _small); end
+	def self.dbg_text_clear(_attr = 0, _small = false); return bgfx_dbg_text_clear(_attr, _small); end
 	
 	#
 	# Print formatted data to internal debug text character-buffer (VGA-compatible text mode).
@@ -1943,7 +1943,7 @@ module Bgfx
 	#   - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on
 	#       index buffers.
 	#
-	def self.create_index_buffer(_mem, _flags); return bgfx_create_index_buffer(_mem, _flags); end
+	def self.create_index_buffer(_mem, _flags = Bgfx::Buffer_None); return bgfx_create_index_buffer(_mem, _flags); end
 	
 	#
 	# Set static index buffer debug name.
@@ -1953,7 +1953,7 @@ module Bgfx
 	# _len = Static index buffer name length (if length is INT32_MAX, it's expected
 	# that _name is zero terminated string.
 	#
-	def self.set_index_buffer_name(_handle, _name, _len); return bgfx_set_index_buffer_name(_handle, _name, _len); end
+	def self.set_index_buffer_name(_handle, _name, _len = 0x7fffffff); return bgfx_set_index_buffer_name(_handle, _name, _len); end
 	
 	#
 	# Destroy static index buffer.
@@ -1992,7 +1992,7 @@ module Bgfx
 	#      will be trimmed to fit the existing buffer size. This flag has effect only on dynamic buffers.
 	#  - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on index buffers.
 	#
-	def self.create_vertex_buffer(_mem, _layout, _flags); return bgfx_create_vertex_buffer(_mem, _layout, _flags); end
+	def self.create_vertex_buffer(_mem, _layout, _flags = Bgfx::Buffer_None); return bgfx_create_vertex_buffer(_mem, _layout, _flags); end
 	
 	#
 	# Set static vertex buffer debug name.
@@ -2002,7 +2002,7 @@ module Bgfx
 	# _len = Static vertex buffer name length (if length is INT32_MAX, it's expected
 	# that _name is zero terminated string.
 	#
-	def self.set_vertex_buffer_name(_handle, _name, _len); return bgfx_set_vertex_buffer_name(_handle, _name, _len); end
+	def self.set_vertex_buffer_name(_handle, _name, _len = 0x7fffffff); return bgfx_set_vertex_buffer_name(_handle, _name, _len); end
 	
 	#
 	# Destroy static vertex buffer.
@@ -2028,7 +2028,7 @@ module Bgfx
 	#   - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on
 	#       index buffers.
 	#
-	def self.create_dynamic_index_buffer(_num, _flags); return bgfx_create_dynamic_index_buffer(_num, _flags); end
+	def self.create_dynamic_index_buffer(_num, _flags = Bgfx::Buffer_None); return bgfx_create_dynamic_index_buffer(_num, _flags); end
 	
 	#
 	# Create dynamic index buffer and initialized it.
@@ -2047,7 +2047,7 @@ module Bgfx
 	#   - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on
 	#       index buffers.
 	#
-	def self.create_dynamic_index_buffer_mem(_mem, _flags); return bgfx_create_dynamic_index_buffer_mem(_mem, _flags); end
+	def self.create_dynamic_index_buffer_mem(_mem, _flags = Bgfx::Buffer_None); return bgfx_create_dynamic_index_buffer_mem(_mem, _flags); end
 	
 	#
 	# Update dynamic index buffer.
@@ -2083,7 +2083,7 @@ module Bgfx
 	#   - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on
 	#       index buffers.
 	#
-	def self.create_dynamic_vertex_buffer(_num, _layout, _flags); return bgfx_create_dynamic_vertex_buffer(_num, _layout, _flags); end
+	def self.create_dynamic_vertex_buffer(_num, _layout, _flags = Bgfx::Buffer_None); return bgfx_create_dynamic_vertex_buffer(_num, _layout, _flags); end
 	
 	#
 	# Create dynamic vertex buffer and initialize it.
@@ -2103,7 +2103,7 @@ module Bgfx
 	#   - `BGFX_BUFFER_INDEX32` - Buffer is using 32-bit indices. This flag has effect only on
 	#       index buffers.
 	#
-	def self.create_dynamic_vertex_buffer_mem(_mem, _layout, _flags); return bgfx_create_dynamic_vertex_buffer_mem(_mem, _layout, _flags); end
+	def self.create_dynamic_vertex_buffer_mem(_mem, _layout, _flags = Bgfx::Buffer_None); return bgfx_create_dynamic_vertex_buffer_mem(_mem, _layout, _flags); end
 	
 	#
 	# Update dynamic vertex buffer.
@@ -2227,7 +2227,7 @@ module Bgfx
 	# _uniforms = UniformHandle array where data will be stored.
 	# _max = Maximum capacity of array.
 	#
-	def self.get_shader_uniforms(_handle, _uniforms, _max); return bgfx_get_shader_uniforms(_handle, _uniforms, _max); end
+	def self.get_shader_uniforms(_handle, _uniforms = nil, _max = 0); return bgfx_get_shader_uniforms(_handle, _uniforms, _max); end
 	
 	#
 	# Set shader debug name.
@@ -2237,7 +2237,7 @@ module Bgfx
 	# _len = Shader name length (if length is INT32_MAX, it's expected
 	# that _name is zero terminated string).
 	#
-	def self.set_shader_name(_handle, _name, _len); return bgfx_set_shader_name(_handle, _name, _len); end
+	def self.set_shader_name(_handle, _name, _len = 0x7fffffff); return bgfx_set_shader_name(_handle, _name, _len); end
 	
 	#
 	# Destroy shader.
@@ -2255,7 +2255,7 @@ module Bgfx
 	# _fsh = Fragment shader.
 	# _destroyShaders = If true, shaders will be destroyed when program is destroyed.
 	#
-	def self.create_program(_vsh, _fsh, _destroyShaders); return bgfx_create_program(_vsh, _fsh, _destroyShaders); end
+	def self.create_program(_vsh, _fsh, _destroyShaders = false); return bgfx_create_program(_vsh, _fsh, _destroyShaders); end
 	
 	#
 	# Create program with compute shader.
@@ -2263,7 +2263,7 @@ module Bgfx
 	# _csh = Compute shader.
 	# _destroyShaders = If true, shaders will be destroyed when program is destroyed.
 	#
-	def self.create_compute_program(_csh, _destroyShaders); return bgfx_create_compute_program(_csh, _destroyShaders); end
+	def self.create_compute_program(_csh, _destroyShaders = false); return bgfx_create_compute_program(_csh, _destroyShaders); end
 	
 	#
 	# Destroy program.
@@ -2310,7 +2310,7 @@ module Bgfx
 	# _skip = Skip top level mips when parsing texture.
 	# _info = When non-`NULL` is specified it returns parsed texture information.
 	#
-	def self.create_texture(_mem, _flags, _skip, _info); return bgfx_create_texture(_mem, _flags, _skip, _info); end
+	def self.create_texture(_mem, _flags, _skip = 0, _info = nil); return bgfx_create_texture(_mem, _flags, _skip, _info); end
 	
 	#
 	# Create 2D texture.
@@ -2331,7 +2331,7 @@ module Bgfx
 	# `_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 	# 1, expected memory layout is texture and all mips together for each array element.
 	#
-	def self.create_texture_2d(_width, _height, _hasMips, _numLayers, _format, _flags, _mem); return bgfx_create_texture_2d(_width, _height, _hasMips, _numLayers, _format, _flags, _mem); end
+	def self.create_texture_2d(_width, _height, _hasMips, _numLayers, _format, _flags, _mem = nil); return bgfx_create_texture_2d(_width, _height, _hasMips, _numLayers, _format, _flags, _mem); end
 	
 	#
 	# Create texture with size based on backbuffer ratio. Texture will maintain ratio
@@ -2349,7 +2349,7 @@ module Bgfx
 	# - `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 	#   sampling.
 	#
-	def self.create_texture_2d_scaled(_ratio, _hasMips, _numLayers, _format, _flags); return bgfx_create_texture_2d_scaled(_ratio, _hasMips, _numLayers, _format, _flags); end
+	def self.create_texture_2d_scaled(_ratio, _hasMips, _numLayers, _format, _flags = Bgfx::Texture_None|Bgfx::Sampler_None); return bgfx_create_texture_2d_scaled(_ratio, _hasMips, _numLayers, _format, _flags); end
 	
 	#
 	# Create 3D texture.
@@ -2369,7 +2369,7 @@ module Bgfx
 	# `_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 	# 1, expected memory layout is texture and all mips together for each array element.
 	#
-	def self.create_texture_3d(_width, _height, _depth, _hasMips, _format, _flags, _mem); return bgfx_create_texture_3d(_width, _height, _depth, _hasMips, _format, _flags, _mem); end
+	def self.create_texture_3d(_width, _height, _depth, _hasMips, _format, _flags = Bgfx::Texture_None|Bgfx::Sampler_None, _mem = nil); return bgfx_create_texture_3d(_width, _height, _depth, _hasMips, _format, _flags, _mem); end
 	
 	#
 	# Create Cube texture.
@@ -2389,7 +2389,7 @@ module Bgfx
 	# `_mem` is NULL content of the texture is uninitialized. When `_numLayers` is more than
 	# 1, expected memory layout is texture and all mips together for each array element.
 	#
-	def self.create_texture_cube(_size, _hasMips, _numLayers, _format, _flags, _mem); return bgfx_create_texture_cube(_size, _hasMips, _numLayers, _format, _flags, _mem); end
+	def self.create_texture_cube(_size, _hasMips, _numLayers, _format, _flags = Bgfx::Texture_None|Bgfx::Sampler_None, _mem = nil); return bgfx_create_texture_cube(_size, _hasMips, _numLayers, _format, _flags, _mem); end
 	
 	#
 	# Update 2D texture.
@@ -2406,7 +2406,7 @@ module Bgfx
 	# _pitch = Pitch of input image (bytes). When _pitch is set to
 	# UINT16_MAX, it will be calculated internally based on _width.
 	#
-	def self.update_texture_2d(_handle, _layer, _mip, _x, _y, _width, _height, _mem, _pitch); return bgfx_update_texture_2d(_handle, _layer, _mip, _x, _y, _width, _height, _mem, _pitch); end
+	def self.update_texture_2d(_handle, _layer, _mip, _x, _y, _width, _height, _mem, _pitch = 0xffff); return bgfx_update_texture_2d(_handle, _layer, _mip, _x, _y, _width, _height, _mem, _pitch); end
 	
 	#
 	# Update 3D texture.
@@ -2457,7 +2457,7 @@ module Bgfx
 	# _pitch = Pitch of input image (bytes). When _pitch is set to
 	# UINT16_MAX, it will be calculated internally based on _width.
 	#
-	def self.update_texture_cube(_handle, _layer, _side, _mip, _x, _y, _width, _height, _mem, _pitch); return bgfx_update_texture_cube(_handle, _layer, _side, _mip, _x, _y, _width, _height, _mem, _pitch); end
+	def self.update_texture_cube(_handle, _layer, _side, _mip, _x, _y, _width, _height, _mem, _pitch = 0xffff); return bgfx_update_texture_cube(_handle, _layer, _side, _mip, _x, _y, _width, _height, _mem, _pitch); end
 	
 	#
 	# Read back texture content.
@@ -2468,7 +2468,7 @@ module Bgfx
 	# _data = Destination buffer.
 	# _mip = Mip level.
 	#
-	def self.read_texture(_handle, _data, _mip); return bgfx_read_texture(_handle, _data, _mip); end
+	def self.read_texture(_handle, _data, _mip = 0); return bgfx_read_texture(_handle, _data, _mip); end
 	
 	#
 	# Set texture debug name.
@@ -2478,7 +2478,7 @@ module Bgfx
 	# _len = Texture name length (if length is INT32_MAX, it's expected
 	# that _name is zero terminated string.
 	#
-	def self.set_texture_name(_handle, _name, _len); return bgfx_set_texture_name(_handle, _name, _len); end
+	def self.set_texture_name(_handle, _name, _len = 0x7fffffff); return bgfx_set_texture_name(_handle, _name, _len); end
 	
 	#
 	# Returns texture direct access pointer.
@@ -2509,7 +2509,7 @@ module Bgfx
 	# - `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 	#   sampling.
 	#
-	def self.create_frame_buffer(_width, _height, _format, _textureFlags); return bgfx_create_frame_buffer(_width, _height, _format, _textureFlags); end
+	def self.create_frame_buffer(_width, _height, _format, _textureFlags = Bgfx::Sampler_U_Clamp|Bgfx::Sampler_V_Clamp); return bgfx_create_frame_buffer(_width, _height, _format, _textureFlags); end
 	
 	#
 	# Create frame buffer with size based on backbuffer ratio. Frame buffer will maintain ratio
@@ -2525,7 +2525,7 @@ module Bgfx
 	# - `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 	#   sampling.
 	#
-	def self.create_frame_buffer_scaled(_ratio, _format, _textureFlags); return bgfx_create_frame_buffer_scaled(_ratio, _format, _textureFlags); end
+	def self.create_frame_buffer_scaled(_ratio, _format, _textureFlags = Bgfx::Sampler_U_Clamp|Bgfx::Sampler_V_Clamp); return bgfx_create_frame_buffer_scaled(_ratio, _format, _textureFlags); end
 	
 	#
 	# Create MRT frame buffer from texture handles (simple).
@@ -2535,7 +2535,7 @@ module Bgfx
 	# _destroyTexture = If true, textures will be destroyed when
 	# frame buffer is destroyed.
 	#
-	def self.create_frame_buffer_from_handles(_num, _handles, _destroyTexture); return bgfx_create_frame_buffer_from_handles(_num, _handles, _destroyTexture); end
+	def self.create_frame_buffer_from_handles(_num, _handles, _destroyTexture = false); return bgfx_create_frame_buffer_from_handles(_num, _handles, _destroyTexture); end
 	
 	#
 	# Create MRT frame buffer from texture handles with specific layer and
@@ -2546,7 +2546,7 @@ module Bgfx
 	# _destroyTexture = If true, textures will be destroyed when
 	# frame buffer is destroyed.
 	#
-	def self.create_frame_buffer_from_attachment(_num, _attachment, _destroyTexture); return bgfx_create_frame_buffer_from_attachment(_num, _attachment, _destroyTexture); end
+	def self.create_frame_buffer_from_attachment(_num, _attachment, _destroyTexture = false); return bgfx_create_frame_buffer_from_attachment(_num, _attachment, _destroyTexture); end
 	
 	#
 	# Create frame buffer for multiple window rendering.
@@ -2560,7 +2560,7 @@ module Bgfx
 	# _format = Window back buffer color format.
 	# _depthFormat = Window back buffer depth format.
 	#
-	def self.create_frame_buffer_from_nwh(_nwh, _width, _height, _format, _depthFormat); return bgfx_create_frame_buffer_from_nwh(_nwh, _width, _height, _format, _depthFormat); end
+	def self.create_frame_buffer_from_nwh(_nwh, _width, _height, _format = Bgfx::TextureFormat::Count, _depthFormat = Bgfx::TextureFormat::Count); return bgfx_create_frame_buffer_from_nwh(_nwh, _width, _height, _format, _depthFormat); end
 	
 	#
 	# Set frame buffer debug name.
@@ -2570,14 +2570,14 @@ module Bgfx
 	# _len = Frame buffer name length (if length is INT32_MAX, it's expected
 	# that _name is zero terminated string.
 	#
-	def self.set_frame_buffer_name(_handle, _name, _len); return bgfx_set_frame_buffer_name(_handle, _name, _len); end
+	def self.set_frame_buffer_name(_handle, _name, _len = 0x7fffffff); return bgfx_set_frame_buffer_name(_handle, _name, _len); end
 	
 	#
 	# Obtain texture handle of frame buffer attachment.
 	# Params:
 	# _handle = Frame buffer handle.
 	#
-	def self.get_texture(_handle, _attachment); return bgfx_get_texture(_handle, _attachment); end
+	def self.get_texture(_handle, _attachment = 0); return bgfx_get_texture(_handle, _attachment); end
 	
 	#
 	# Destroy frame buffer.
@@ -2615,7 +2615,7 @@ module Bgfx
 	# _type = Type of uniform (See: `bgfx::UniformType`).
 	# _num = Number of elements in array.
 	#
-	def self.create_uniform(_name, _type, _num); return bgfx_create_uniform(_name, _type, _num); end
+	def self.create_uniform(_name, _type, _num = 1); return bgfx_create_uniform(_name, _type, _num); end
 	
 	#
 	# Retrieve uniform info.
@@ -2644,7 +2644,7 @@ module Bgfx
 	# _result = Number of pixels that passed test. This argument
 	# can be `NULL` if result of occlusion query is not needed.
 	#
-	def self.get_result(_handle, _result); return bgfx_get_result(_handle, _result); end
+	def self.get_result(_handle, _result = nil); return bgfx_get_result(_handle, _result); end
 	
 	#
 	# Destroy occlusion query.
@@ -2716,7 +2716,7 @@ module Bgfx
 	# _width = Width of view scissor region.
 	# _height = Height of view scissor region.
 	#
-	def self.set_view_scissor(_id, _x, _y, _width, _height); return bgfx_set_view_scissor(_id, _x, _y, _width, _height); end
+	def self.set_view_scissor(_id, _x = 0, _y = 0, _width = 0, _height = 0); return bgfx_set_view_scissor(_id, _x, _y, _width, _height); end
 	
 	#
 	# Set view clear flags.
@@ -2728,7 +2728,7 @@ module Bgfx
 	# _depth = Depth clear value.
 	# _stencil = Stencil clear value.
 	#
-	def self.set_view_clear(_id, _flags, _rgba, _depth, _stencil); return bgfx_set_view_clear(_id, _flags, _rgba, _depth, _stencil); end
+	def self.set_view_clear(_id, _flags, _rgba = 0x000000ff, _depth = 1.0, _stencil = 0); return bgfx_set_view_clear(_id, _flags, _rgba, _depth, _stencil); end
 	
 	#
 	# Set view clear flags with different clear color for each
@@ -2749,7 +2749,7 @@ module Bgfx
 	# _c6 = Palette index for frame buffer attachment 6.
 	# _c7 = Palette index for frame buffer attachment 7.
 	#
-	def self.set_view_clear_mrt(_id, _flags, _depth, _stencil, _c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7); return bgfx_set_view_clear_mrt(_id, _flags, _depth, _stencil, _c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7); end
+	def self.set_view_clear_mrt(_id, _flags, _depth, _stencil, _c0 = 0xff, _c1 = 0xff, _c2 = 0xff, _c3 = 0xff, _c4 = 0xff, _c5 = 0xff, _c6 = 0xff, _c7 = 0xff); return bgfx_set_view_clear_mrt(_id, _flags, _depth, _stencil, _c0, _c1, _c2, _c3, _c4, _c5, _c6, _c7); end
 	
 	#
 	# Set view sorting mode.
@@ -2759,7 +2759,7 @@ module Bgfx
 	# _id = View id.
 	# _mode = View sort mode. See `ViewMode::Enum`.
 	#
-	def self.set_view_mode(_id, _mode); return bgfx_set_view_mode(_id, _mode); end
+	def self.set_view_mode(_id, _mode = ViewMode::Default); return bgfx_set_view_mode(_id, _mode); end
 	
 	#
 	# Set view frame buffer.
@@ -2791,7 +2791,7 @@ module Bgfx
 	# _order = View remap id table. Passing `NULL` will reset view ids
 	# to default state.
 	#
-	def self.set_view_order(_id, _num, _order); return bgfx_set_view_order(_id, _num, _order); end
+	def self.set_view_order(_id = 0, _num = 0xffff, _order = nil); return bgfx_set_view_order(_id, _num, _order); end
 	
 	#
 	# Reset all view settings to default.
@@ -2836,7 +2836,7 @@ module Bgfx
 	# Params:
 	# _msecs = Timeout in milliseconds.
 	#
-	def self.render_frame(_msecs); return bgfx_render_frame(_msecs); end
+	def self.render_frame(_msecs = -1); return bgfx_render_frame(_msecs); end
 	
 	#
 	# Set platform data.
@@ -2922,7 +2922,7 @@ module Bgfx
 	# _rgba = Sets blend factor used by `BGFX_STATE_BLEND_FACTOR` and
 	#   `BGFX_STATE_BLEND_INV_FACTOR` blend modes.
 	#
-	def self.set_state(_state, _rgba); return bgfx_set_state(_state, _rgba); end
+	def self.set_state(_state, _rgba = 0); return bgfx_set_state(_state, _rgba); end
 	
 	#
 	# Set condition for rendering.
@@ -2939,7 +2939,7 @@ module Bgfx
 	# _bstencil = Back stencil state. If back is set to `BGFX_STENCIL_NONE`
 	# _fstencil is applied to both front and back facing primitives.
 	#
-	def self.set_stencil(_fstencil, _bstencil); return bgfx_set_stencil(_fstencil, _bstencil); end
+	def self.set_stencil(_fstencil, _bstencil = Bgfx::Stencil_None); return bgfx_set_stencil(_fstencil, _bstencil); end
 	
 	#
 	# Set scissor for draw primitive.
@@ -2960,7 +2960,7 @@ module Bgfx
 	# Params:
 	# _cache = Index in scissor cache.
 	#
-	def self.set_scissor_cached(_cache); return bgfx_set_scissor_cached(_cache); end
+	def self.set_scissor_cached(_cache = 0xffff); return bgfx_set_scissor_cached(_cache); end
 	
 	#
 	# Set model matrix for draw primitive. If it is not called,
@@ -2977,7 +2977,7 @@ module Bgfx
 	# _cache = Index in matrix cache.
 	# _num = Number of matrices from cache.
 	#
-	def self.set_transform_cached(_cache, _num); return bgfx_set_transform_cached(_cache, _num); end
+	def self.set_transform_cached(_cache, _num = 1); return bgfx_set_transform_cached(_cache, _num); end
 	
 	#
 	# Reserve matrices in internal matrix cache.
@@ -2996,7 +2996,7 @@ module Bgfx
 	# _num = Number of elements. Passing `UINT16_MAX` will
 	# use the _num passed on uniform creation.
 	#
-	def self.set_uniform(_handle, _value, _num); return bgfx_set_uniform(_handle, _value, _num); end
+	def self.set_uniform(_handle, _value, _num = 1); return bgfx_set_uniform(_handle, _value, _num); end
 	
 	#
 	# Set index buffer for draw primitive.
@@ -3112,7 +3112,7 @@ module Bgfx
 	#   - `BGFX_SAMPLER_[MIN/MAG/MIP]_[POINT/ANISOTROPIC]` - Point or anisotropic
 	#     sampling.
 	#
-	def self.set_texture(_stage, _sampler, _handle, _flags); return bgfx_set_texture(_stage, _sampler, _handle, _flags); end
+	def self.set_texture(_stage, _sampler, _handle, _flags = 0xffffffff); return bgfx_set_texture(_stage, _sampler, _handle, _flags); end
 	
 	#
 	# Submit an empty primitive for rendering. Uniforms and draw state
@@ -3132,7 +3132,7 @@ module Bgfx
 	# _depth = Depth for sorting.
 	# _flags = Which states to discard for next draw. See BGFX_DISCARD_
 	#
-	def self.submit(_id, _program, _depth, _flags); return bgfx_submit(_id, _program, _depth, _flags); end
+	def self.submit(_id, _program, _depth = 0, _flags = Bgfx::Discard_All); return bgfx_submit(_id, _program, _depth, _flags); end
 	
 	#
 	# Submit primitive with occlusion query for rendering.
@@ -3143,7 +3143,7 @@ module Bgfx
 	# _depth = Depth for sorting.
 	# _flags = Which states to discard for next draw. See BGFX_DISCARD_
 	#
-	def self.submit_occlusion_query(_id, _program, _occlusionQuery, _depth, _flags); return bgfx_submit_occlusion_query(_id, _program, _occlusionQuery, _depth, _flags); end
+	def self.submit_occlusion_query(_id, _program, _occlusionQuery, _depth = 0, _flags = Bgfx::Discard_All); return bgfx_submit_occlusion_query(_id, _program, _occlusionQuery, _depth, _flags); end
 	
 	#
 	# Submit primitive for rendering with index and instance data info from
@@ -3157,7 +3157,7 @@ module Bgfx
 	# _depth = Depth for sorting.
 	# _flags = Which states to discard for next draw. See BGFX_DISCARD_
 	#
-	def self.submit_indirect(_id, _program, _indirectHandle, _start, _num, _depth, _flags); return bgfx_submit_indirect(_id, _program, _indirectHandle, _start, _num, _depth, _flags); end
+	def self.submit_indirect(_id, _program, _indirectHandle, _start = 0, _num = 1, _depth = 0, _flags = Bgfx::Discard_All); return bgfx_submit_indirect(_id, _program, _indirectHandle, _start, _num, _depth, _flags); end
 	
 	#
 	# Set compute index buffer.
@@ -3213,7 +3213,7 @@ module Bgfx
 	# _access = Image access. See `Access::Enum`.
 	# _format = Texture format. See: `TextureFormat::Enum`.
 	#
-	def self.set_image(_stage, _handle, _mip, _access, _format); return bgfx_set_image(_stage, _handle, _mip, _access, _format); end
+	def self.set_image(_stage, _handle, _mip, _access, _format = Bgfx::TextureFormat::Count); return bgfx_set_image(_stage, _handle, _mip, _access, _format); end
 	
 	#
 	# Dispatch compute.
@@ -3225,7 +3225,7 @@ module Bgfx
 	# _numZ = Number of groups Z.
 	# _flags = Discard or preserve states. See `BGFX_DISCARD_*`.
 	#
-	def self.dispatch(_id, _program, _numX, _numY, _numZ, _flags); return bgfx_dispatch(_id, _program, _numX, _numY, _numZ, _flags); end
+	def self.dispatch(_id, _program, _numX = 1, _numY = 1, _numZ = 1, _flags = Bgfx::Discard_All); return bgfx_dispatch(_id, _program, _numX, _numY, _numZ, _flags); end
 	
 	#
 	# Dispatch compute indirect.
@@ -3237,14 +3237,14 @@ module Bgfx
 	# _num = Number of dispatches.
 	# _flags = Discard or preserve states. See `BGFX_DISCARD_*`.
 	#
-	def self.dispatch_indirect(_id, _program, _indirectHandle, _start, _num, _flags); return bgfx_dispatch_indirect(_id, _program, _indirectHandle, _start, _num, _flags); end
+	def self.dispatch_indirect(_id, _program, _indirectHandle, _start = 0, _num = 1, _flags = Bgfx::Discard_All); return bgfx_dispatch_indirect(_id, _program, _indirectHandle, _start, _num, _flags); end
 	
 	#
 	# Discard previously set state for draw or compute call.
 	# Params:
 	# _flags = Draw/compute states to discard.
 	#
-	def self.discard(_flags); return bgfx_discard(_flags); end
+	def self.discard(_flags = Bgfx::Discard_All); return bgfx_discard(_flags); end
 	
 	#
 	# Blit 2D texture region between two 2D textures.
@@ -3271,7 +3271,7 @@ module Bgfx
 	# _depth = If texture is 3D this argument represents depth of region, otherwise it's
 	# unused.
 	#
-	def self.blit(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth); return bgfx_blit(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth); end
+	def self.blit(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip = 0, _srcX = 0, _srcY = 0, _srcZ = 0, _width = 0xffff, _height = 0xffff, _depth = 0xffff); return bgfx_blit(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth); end
 	
 end # module Bgfx
 

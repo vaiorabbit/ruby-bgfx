@@ -128,7 +128,7 @@ class Sample06 < Sample
     ImGui::ImplBgfx_Init()
 
     Bgfx::set_debug(debug)
-    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
+    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff)
 
     PosNormalTangentTexcoordVertex.init()
 
@@ -136,13 +136,11 @@ class Sample06 < Sample
 
     @m_vbh = Bgfx::create_vertex_buffer(
       Bgfx::make_ref(@@s_cubeVertices, @@s_cubeVertices.size),
-      PosNormalTangentTexcoordVertex.ms_layout,
-      Bgfx::Buffer_None
+      PosNormalTangentTexcoordVertex.ms_layout
     )
 
     @m_ibh = Bgfx::create_index_buffer(
-      Bgfx::make_ref(@@s_cubeIndices, @@s_cubeIndices.size),
-      Bgfx::Buffer_None
+      Bgfx::make_ref(@@s_cubeIndices, @@s_cubeIndices.size)
     )
 
     @s_texColor  = Bgfx::create_uniform("s_texColor",  Bgfx::UniformType::Sampler, -1)
@@ -191,7 +189,7 @@ class Sample06 < Sample
     ret = super(dt)
     @time += dt
 
-    Bgfx::reset(@window_width, @window_height, @reset, Bgfx::TextureFormat::Count)
+    Bgfx::reset(@window_width, @window_height, @reset)
 
     ImGui::NewFrame()
     ImGui::PushFont(ImGui::ImplBgfx_GetFont())
@@ -230,17 +228,17 @@ class Sample06 < Sample
         mtxTransform = RMtx4.new.translation(-3.0 + xx * 3.0, -3.0 + yy * 3.0, 0.0) * RMtx4.new.rotationY(@time * 0.03 + yy * 0.37) * RMtx4.new.rotationX(@time * 0.23 + xx * 0.21)
         mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(mtxTransform.to_a)
         Bgfx::set_transform(mtx, 1)
-        Bgfx::set_vertex_buffer(0, @m_vbh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::set_index_buffer(@m_ibh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::set_texture(0, @s_texColor,  @m_textureColor, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::set_texture(1, @s_texNormal, @m_textureNormal, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::set_state(state, 0)
+        Bgfx::set_vertex_buffer(0, @m_vbh, 0, 0xffffffff)
+        Bgfx::set_index_buffer(@m_ibh, 0, 0xffffffff)
+        Bgfx::set_texture(0, @s_texColor,  @m_textureColor)
+        Bgfx::set_texture(1, @s_texNormal, @m_textureNormal)
+        Bgfx::set_state(state)
 
-        Bgfx::submit(0, @m_program, 0, Bgfx::Discard_All)
+        Bgfx::submit(0, @m_program, 0)
       end
     end
 
-    Bgfx::frame(false)
+    Bgfx::frame()
 
     return ret
   end

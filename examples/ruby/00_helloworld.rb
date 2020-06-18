@@ -30,7 +30,7 @@ class Sample00 < Sample
     ImGui::ImplBgfx_Init()
 
     Bgfx::set_debug(debug)
-    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
+    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff)
 
     @eye.setElements(0.0, 0.0, -7.0)
     @at.setElements(0.0, 0.0, 0.0)
@@ -63,13 +63,13 @@ class Sample00 < Sample
     # ImGui::Render()
     # ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 
-    Bgfx::reset(@window_width, @window_height, @reset, Bgfx::TextureFormat::Count)
+    Bgfx::reset(@window_width, @window_height, @reset)
 
     Bgfx::set_view_transform(0, @view, @proj)
     Bgfx::set_view_rect(0, 0, 0, @window_width, @window_height)
     Bgfx::touch(0)
 
-    Bgfx::dbg_text_clear(0, false)
+    Bgfx::dbg_text_clear(0)
     Bgfx::dbg_text_image(
       [@window_width /2/8, 20].max - 20,
       [@window_height /2/16, 6].max - 6,
@@ -83,7 +83,7 @@ class Sample00 < Sample
     Bgfx::dbg_text_printf(0, 1, 0x0f, "\x1b[;0m    \x1b[;1m    \x1b[; 2m    \x1b[; 3m    \x1b[; 4m    \x1b[; 5m    \x1b[; 6m    \x1b[; 7m    \x1b[0m")
     Bgfx::dbg_text_printf(0, 2, 0x0f, "\x1b[;8m    \x1b[;9m    \x1b[;10m    \x1b[;11m    \x1b[;12m    \x1b[;13m    \x1b[;14m    \x1b[;15m    \x1b[0m")
 
-    Bgfx::frame(false)
+    Bgfx::frame()
 
     return ret
   end

@@ -268,6 +268,47 @@ local function convert_struct_member(member)
    return ":" .. convert_name(member.name) .. ", " .. convert_type(member)
 end
 
+local function sanitize_default_argument(arg_str)
+   retval = ""
+
+   if arg_str == "NULL" then
+      retval = "nil"
+   elseif arg_str == "BGFX_TEXTURE_NONE|BGFX_SAMPLER_NONE" then
+      retval = "Bgfx::Texture_None|Bgfx::Sampler_None"
+   elseif arg_str == "BGFX_SAMPLER_U_CLAMP|BGFX_SAMPLER_V_CLAMP" then
+      retval = "Bgfx::Sampler_U_Clamp|Bgfx::Sampler_V_Clamp"
+   elseif arg_str == "TextureFormat::Count" then
+      retval = "Bgfx::TextureFormat::Count"
+   elseif arg_str == "BGFX_BUFFER_NONE" then
+      retval = "Bgfx::Buffer_None"
+   elseif arg_str == "BGFX_DISCARD_ALL" then
+      retval = "Bgfx::Discard_All"
+   elseif arg_str == "BGFX_RESET_NONE" then
+      retval = "Bgfx::Reset_None"
+   elseif arg_str == "BGFX_STENCIL_NONE" then
+      retval = "Bgfx::Stencil_None"
+   elseif arg_str == "INT32_MAX" then
+      retval = "0x7fffffff"
+   elseif arg_str == "UINT32_MAX" then
+      retval = "0xffffffff"
+   elseif arg_str == "UINT16_MAX" then
+      retval = "0xffff"
+   elseif arg_str == "UINT8_MAX" then
+      retval = "0xff"
+   elseif string.find(tostring(arg_str), "^[+-]?%d*%.?%d*f$") then
+      _, _, num = string.find(tostring(arg_str), "^([+-]?%d*%.?%d*)f$")
+      -- print("float", arg_str, num)
+      retval = num
+   -- elseif tonumber(arg_str) ~= nil then
+      -- print("tonum", arg_str)
+      -- retval = tonumber(arg_str)
+   else
+      retval = arg_str
+   end
+   -- print(arg_str, "->", retval)
+   return retval
+end
+
 ----------------------------------------------------------------------------------------------------
 
 function collect_typedefs_list(typ)
@@ -312,7 +353,7 @@ end
 function converter.structs(typ)
    -- Build forward declarations
    if typ.struct ~= nil then
-	  class_name = typ.cname:gsub("^%l", string.upper)
+      class_name = typ.cname:gsub("^%l", string.upper)
       yield("class " .. class_name .. " < FFI::Struct")
 
       -- Member variables
@@ -342,23 +383,21 @@ function converter.structs(typ)
       yield("\t)")
 
       -- Instance methods
-	  struct_name_key = typ.cname:gsub("^bgfx_", ""):gsub("_t$", "") .. "_"
-	  -- print(struct_name_key)
-	  for _, func in ipairs(methods_list) do
-		 -- print(_, func.cname)
-		 if string.match(func.cname, "^" .. struct_name_key) ~= nil then
-			method_name = func.cname:gsub("^" .. struct_name_key, "")
+      struct_name_key = typ.cname:gsub("^bgfx_", ""):gsub("_t$", "") .. "_"
+      for _, func in ipairs(methods_list) do
+         if string.match(func.cname, "^" .. struct_name_key) ~= nil then
+            method_name = func.cname:gsub("^" .. struct_name_key, "")
 
-			local args = {}
-			for _, arg in ipairs(func.args) do
-			   table.insert(args, arg.name)
-			end
+            local args = {}
+            for _, arg in ipairs(func.args) do
+               table.insert(args, arg.name)
+            end
 
-			yield("\tdef " .. method_name .. "(" .. table.concat(args, ", ") .. ")")
-			yield("\t\tBgfx::bgfx_" .. func.cname .. "(self, " .. table.concat(args, ", ") .. ")")
-			yield("\tend")
-		 end
-	  end
+            yield("\tdef " .. method_name .. "(" .. table.concat(args, ", ") .. ")")
+            yield("\t\tBgfx::bgfx_" .. func.cname .. "(self, " .. table.concat(args, ", ") .. ")")
+            yield("\tend")
+         end
+      end
       yield("end")
    end
 end
@@ -465,42 +504,6 @@ function converter.attach_funcs(func)
         return
     end
 
-    -- if func.comments ~= nil then
-    --    -- comments
-    --     yield("\t#")
-    --     for _, line in ipairs(func.comments) do
-    --         local line = line:gsub("@remarks", "Remarks:")
-    --         line = line:gsub("@remark", "Remarks:")
-    --         line = line:gsub("@(%l)(%l+)", function(a, b) return a:upper()..b..":" end)
-    --         yield("\t# " .. line)
-    --     end
-
-    --     local hasParamsComments = false
-    --     for _, arg in ipairs(func.args) do
-    --         if arg.comment ~= nil then
-    --             hasParamsComments = true
-    --             break
-    --         end
-    --     end
-
-    --     if hasParamsComments then
-    --         yield("\t# Params:")
-    --     end
-
-    --     for _, arg in ipairs(func.args) do
-    --         if arg.comment ~= nil then
-    --             yield("\t# " .. convert_name(arg.name) .. " = " .. arg.comment[1])
-    --             for i, comment in ipairs(arg.comment) do
-    --                 if (i > 1) then
-    --                     yield("\t# " .. comment)
-    --                 end
-    --             end
-    --         end
-    --     end
-
-    --     yield("\t#")
-    -- end
-
     -- codes
     local args = {}
     if func.this ~= nil then
@@ -533,7 +536,7 @@ function converter.module_funcs(func)
    end
 
    if func.this ~= nil then
-   	  return
+      return
    end
 
    if func.comments ~= nil then
@@ -572,21 +575,25 @@ function converter.module_funcs(func)
       yield("#")
    end
 
-   -- if func.this ~= nil then
-   -- 	  print(func.cname)
-   -- end
    -- codes
    local args = {}
+   local args_with_defaults = {}
    for _, arg in ipairs(func.args) do
-      table.insert(args, arg.name)
+	  table.insert(args, arg.name)
+	  if arg.default ~= nil then
+		 table.insert(args_with_defaults, arg.name .. " = " .. tostring(sanitize_default_argument(arg.default)) )
+	  else
+		 table.insert(args_with_defaults, arg.name)
+	  end
    end
    -- for func.dbgTextPrintf { vararg = "dbgTextPrintfVargs" }. Explicitly replace last element with *varargs, or we got empty last argument
    if func.vararg ~= nil then
       args[#args] = "*vargargs"
+      args_with_defaults[#args_with_defaults] = "*vargargs"
    end
 
    entry_point = "bgfx_" .. func.cname
-   yield("def self." .. func.cname .. "(" .. table.concat(args, ", ") .. "); return " .. entry_point .. "(" .. table.concat(args, ", ") .. "); end")
+   yield("def self." .. func.cname .. "(" .. table.concat(args_with_defaults, ", ") .. "); return " .. entry_point .. "(" .. table.concat(args, ", ") .. "); end")
 end
 
 ----------------------------------------------------------------------------------------------------

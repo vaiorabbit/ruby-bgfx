@@ -161,7 +161,7 @@ class Sample01 < Sample
     ImGui::ImplBgfx_Init()
 
     Bgfx::set_debug(debug)
-    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
+    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff)
 
     PosColorVertex.init()
 
@@ -226,7 +226,7 @@ class Sample01 < Sample
     ret = super(dt)
     @time += dt
 
-    Bgfx::reset(@window_width, @window_height, @reset, Bgfx::TextureFormat::Count)
+    Bgfx::reset(@window_width, @window_height, @reset)
 
     # ImGui::NewFrame()
     # ImGui::PushFont(ImGui::ImplBgfx_GetFont())
@@ -251,13 +251,13 @@ class Sample01 < Sample
         Bgfx::set_transform(xfrm, 1)
         Bgfx::set_vertex_buffer(0, @m_vbh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
         Bgfx::set_index_buffer(ibh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
-        Bgfx::set_state(state, 0)
+        Bgfx::set_state(state)
 
-        Bgfx::submit(0, @m_program, 0, Bgfx::Discard_All)
+        Bgfx::submit(0, @m_program, 0)
       end
     end
 
-    Bgfx::frame(false)
+    Bgfx::frame()
 
   end
 
