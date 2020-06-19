@@ -762,6 +762,16 @@ end # module Bgfx
 #
 # Structs
 #
+
+class Bgfx_invalid_handle_t < FFI::Struct
+  layout(:idx, :ushort)
+  def self.create
+    handle = new
+    handle[:idx] = Bgfx::InvalidHandleIdx
+    return handle
+  end
+end
+
 class Bgfx_dynamic_index_buffer_handle_t < FFI::Struct; layout(:idx, :ushort); end
 
 class Bgfx_dynamic_vertex_buffer_handle_t < FFI::Struct; layout(:idx, :ushort); end
@@ -1195,19 +1205,19 @@ class Bgfx_encoder_t < FFI::Struct
 	def set_vertex_buffer(_stream, _handle)
 		Bgfx::bgfx_encoder_set_vertex_buffer(self, _stream, _handle)
 	end
-	def set_vertex_buffer(_stream, _handle, _startVertex, _numVertices, _layoutHandle = BGFX_INVALID_HANDLE)
+	def set_vertex_buffer(_stream, _handle, _startVertex, _numVertices, _layoutHandle = Bgfx::InvalidHandle)
 		Bgfx::bgfx_encoder_set_vertex_buffer(self, _stream, _handle, _startVertex, _numVertices, _layoutHandle)
 	end
 	def set_vertex_buffer(_stream, _handle)
 		Bgfx::bgfx_encoder_set_vertex_buffer(self, _stream, _handle)
 	end
-	def set_dynamic_vertex_buffer(_stream, _handle, _startVertex, _numVertices, _layoutHandle = BGFX_INVALID_HANDLE)
+	def set_dynamic_vertex_buffer(_stream, _handle, _startVertex, _numVertices, _layoutHandle = Bgfx::InvalidHandle)
 		Bgfx::bgfx_encoder_set_dynamic_vertex_buffer(self, _stream, _handle, _startVertex, _numVertices, _layoutHandle)
 	end
 	def set_vertex_buffer(_stream, _tvb)
 		Bgfx::bgfx_encoder_set_vertex_buffer(self, _stream, _tvb)
 	end
-	def set_transient_vertex_buffer(_stream, _tvb, _startVertex, _numVertices, _layoutHandle = BGFX_INVALID_HANDLE)
+	def set_transient_vertex_buffer(_stream, _tvb, _startVertex, _numVertices, _layoutHandle = Bgfx::InvalidHandle)
 		Bgfx::bgfx_encoder_set_transient_vertex_buffer(self, _stream, _tvb, _startVertex, _numVertices, _layoutHandle)
 	end
 	def set_vertex_count(_numVertices)
@@ -1289,6 +1299,15 @@ end
 # Functions
 #
 module Bgfx
+
+    InvalidHandleIdx = 0xffff
+
+    def self.is_valid(handle)
+      return handle[:idx] != InvalidHandleIdx
+    end
+
+    InvalidHandle = Bgfx_invalid_handle_t.create
+
     def self.import_symbols()
         	attach_function :bgfx_attachment_init, :bgfx_attachment_init, [Bgfx_attachment_t.by_ref, Bgfx_texture_handle_t.by_value, :Bgfx_access_t, :uint16, :uint16, :uint8], :void
 	
