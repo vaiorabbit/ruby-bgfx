@@ -29,8 +29,8 @@ class Sample06 < Sample
     def self.init()
       if @@ms_layout == nil
         @@ms_layout = Bgfx_vertex_layout_t.new
-        @@ms_layout.begin(Bgfx::RendererType::Noop)
-        @@ms_layout.add(Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float, false, false)
+        @@ms_layout.begin()
+        @@ms_layout.add(Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float)
         @@ms_layout.add(Bgfx::Attrib::Normal, 4, Bgfx::AttribType::Uint8, true, true)
         @@ms_layout.add(Bgfx::Attrib::Tangent, 4, Bgfx::AttribType::Uint8, true, true)
         @@ms_layout.add(Bgfx::Attrib::TexCoord0, 2, Bgfx::AttribType::Int16, true, true)

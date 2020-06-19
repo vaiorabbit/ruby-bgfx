@@ -49,20 +49,6 @@ module Bgfx
     end # self.import_symbols()
     $modulefuncs
 end # module Bgfx
-
-if __FILE__ == $0
-  Bgfx.load_lib('./libbgfx-shared-libRelease.dylib')
-  init = Bgfx_init_t.new
-  init[:type] = Bgfx::RendererType::Metal
-  init[:vendorId] = Bgfx::Pci_Id_None
-  init[:resolution][:width] = 1280
-  init[:resolution][:height] = 720
-  if Bgfx::bgfx_init(init)
-    Bgfx::bgfx_shutdown()
-  else
-    pp "Failed to initialize Bgfx"
-  end
-end
 ]]
 
 local converter = {}
@@ -268,6 +254,7 @@ local function convert_struct_member(member)
    return ":" .. convert_name(member.name) .. ", " .. convert_type(member)
 end
 
+-- C to Ruby literal conversion
 local function sanitize_default_argument(arg_str)
    retval = ""
 
@@ -287,6 +274,8 @@ local function sanitize_default_argument(arg_str)
       retval = "Bgfx::Reset_None"
    elseif arg_str == "BGFX_STENCIL_NONE" then
       retval = "Bgfx::Stencil_None"
+   elseif arg_str == "RendererType::Noop" then
+      retval = "Bgfx::RendererType::Noop"
    elseif arg_str == "INT32_MAX" then
       retval = "0x7fffffff"
    elseif arg_str == "UINT32_MAX" then
@@ -297,15 +286,11 @@ local function sanitize_default_argument(arg_str)
       retval = "0xff"
    elseif string.find(tostring(arg_str), "^[+-]?%d*%.?%d*f$") then
       _, _, num = string.find(tostring(arg_str), "^([+-]?%d*%.?%d*)f$")
-      -- print("float", arg_str, num)
       retval = num
-   -- elseif tonumber(arg_str) ~= nil then
-      -- print("tonum", arg_str)
-      -- retval = tonumber(arg_str)
    else
       retval = arg_str
    end
-   -- print(arg_str, "->", retval)
+
    return retval
 end
 
@@ -389,12 +374,22 @@ function converter.structs(typ)
             method_name = func.cname:gsub("^" .. struct_name_key, "")
 
             local args = {}
+            local args_with_defaults = {}
             for _, arg in ipairs(func.args) do
                table.insert(args, arg.name)
+               if arg.default ~= nil then
+                  table.insert(args_with_defaults, arg.name .. " = " .. tostring(sanitize_default_argument(arg.default)) )
+               else
+                  table.insert(args_with_defaults, arg.name)
+               end
             end
 
-            yield("\tdef " .. method_name .. "(" .. table.concat(args, ", ") .. ")")
-            yield("\t\tBgfx::bgfx_" .. func.cname .. "(self, " .. table.concat(args, ", ") .. ")")
+            yield("\tdef " .. method_name .. "(" .. table.concat(args_with_defaults, ", ") .. ")")
+            if #args < 1 then
+               yield("\t\tBgfx::bgfx_" .. func.cname .. "(self)")
+            else
+               yield("\t\tBgfx::bgfx_" .. func.cname .. "(self, " .. table.concat(args, ", ") .. ")")
+            end
             yield("\tend")
          end
       end
@@ -579,12 +574,12 @@ function converter.module_funcs(func)
    local args = {}
    local args_with_defaults = {}
    for _, arg in ipairs(func.args) do
-	  table.insert(args, arg.name)
-	  if arg.default ~= nil then
-		 table.insert(args_with_defaults, arg.name .. " = " .. tostring(sanitize_default_argument(arg.default)) )
-	  else
-		 table.insert(args_with_defaults, arg.name)
-	  end
+      table.insert(args, arg.name)
+      if arg.default ~= nil then
+         table.insert(args_with_defaults, arg.name .. " = " .. tostring(sanitize_default_argument(arg.default)) )
+      else
+         table.insert(args_with_defaults, arg.name)
+      end
    end
    -- for func.dbgTextPrintf { vararg = "dbgTextPrintfVargs" }. Explicitly replace last element with *varargs, or we got empty last argument
    if func.vararg ~= nil then

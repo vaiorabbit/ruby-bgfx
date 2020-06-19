@@ -27,9 +27,9 @@ class Sample01 < Sample
       if @@ms_layout == nil
         @@ms_layout = Bgfx_vertex_layout_t.new
 
-        @@ms_layout.begin(Bgfx::RendererType::Noop)
-        @@ms_layout.add(Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float, false, false)
-        @@ms_layout.add(Bgfx::Attrib::Color0, 4, Bgfx::AttribType::Uint8, true, false)
+        @@ms_layout.begin()
+        @@ms_layout.add(Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float)
+        @@ms_layout.add(Bgfx::Attrib::Color0, 4, Bgfx::AttribType::Uint8, true)
         @@ms_layout.end
       end
     end
@@ -172,26 +172,11 @@ class Sample01 < Sample
     )
 
     @m_ibh = []
-    @m_ibh[0] = Bgfx::create_index_buffer(
-      Bgfx::make_ref(@@s_cubeTriList, @@s_cubeTriList.size),
-      Bgfx::Buffer_None
-    )
-    @m_ibh[1] = Bgfx::create_index_buffer(
-      Bgfx::make_ref(@@s_cubeTriStrip, @@s_cubeTriStrip.size),
-      Bgfx::Buffer_None
-    )
-    @m_ibh[2] = Bgfx::create_index_buffer(
-      Bgfx::make_ref(@@s_cubeLineList, @@s_cubeLineList.size),
-      Bgfx::Buffer_None
-    )
-    @m_ibh[3] = Bgfx::create_index_buffer(
-      Bgfx::make_ref(@@s_cubeLineStrip, @@s_cubeLineStrip.size),
-      Bgfx::Buffer_None
-    )
-    @m_ibh[4] = Bgfx::create_index_buffer(
-      Bgfx::make_ref(@@s_cubePoints, @@s_cubePoints.size),
-      Bgfx::Buffer_None
-    )
+    @m_ibh[0] = Bgfx::create_index_buffer(Bgfx::make_ref(@@s_cubeTriList, @@s_cubeTriList.size))
+    @m_ibh[1] = Bgfx::create_index_buffer(Bgfx::make_ref(@@s_cubeTriStrip, @@s_cubeTriStrip.size))
+    @m_ibh[2] = Bgfx::create_index_buffer(Bgfx::make_ref(@@s_cubeLineList, @@s_cubeLineList.size))
+    @m_ibh[3] = Bgfx::create_index_buffer(Bgfx::make_ref(@@s_cubeLineStrip, @@s_cubeLineStrip.size))
+    @m_ibh[4] = Bgfx::create_index_buffer(Bgfx::make_ref(@@s_cubePoints, @@s_cubePoints.size))
 
     @m_program = BgfxUtils.load_program("vs_cubes", "fs_cubes")
 
@@ -253,7 +238,7 @@ class Sample01 < Sample
         Bgfx::set_index_buffer(ibh, 0, 0xffffffff) # 0xffffffff == UINT32_MAX
         Bgfx::set_state(state)
 
-        Bgfx::submit(0, @m_program, 0)
+        Bgfx::submit(0, @m_program)
       end
     end
 

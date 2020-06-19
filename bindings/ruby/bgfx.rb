@@ -1031,7 +1031,7 @@ class Bgfx_attachment_t < FFI::Struct
 		:layer, :uint16,		# Cubemap side or depth layer/slice.
 		:resolve, :uint8		# Resolve flags. See: `BGFX_RESOLVE_*`
 	)
-	def init(_handle, _access, _layer, _mip, _resolve)
+	def init(_handle, _access = Access::Write, _layer = 0, _mip = 0, _resolve = BGFX_RESOLVE_AUTO_GEN_MIPS)
 		Bgfx::bgfx_attachment_init(self, _handle, _access, _layer, _mip, _resolve)
 	end
 end
@@ -1112,10 +1112,10 @@ class Bgfx_vertex_layout_t < FFI::Struct
 		:offset, [:uint16, Bgfx::Attrib::Count],		# Attribute offsets.
 		:attributes, [:uint16, Bgfx::Attrib::Count]		# Used attributes.
 	)
-	def begin(_rendererType)
+	def begin(_rendererType = Bgfx::RendererType::Noop)
 		Bgfx::bgfx_vertex_layout_begin(self, _rendererType)
 	end
-	def add(_attrib, _num, _type, _normalized, _asInt)
+	def add(_attrib, _num, _type, _normalized = false, _asInt = false)
 		Bgfx::bgfx_vertex_layout_add(self, _attrib, _num, _type, _normalized, _asInt)
 	end
 	def decode(_attrib, _num, _type, _normalized, _asInt)
@@ -1128,13 +1128,13 @@ class Bgfx_vertex_layout_t < FFI::Struct
 		Bgfx::bgfx_vertex_layout_skip(self, _num)
 	end
 	def end()
-		Bgfx::bgfx_vertex_layout_end(self, )
+		Bgfx::bgfx_vertex_layout_end(self)
 	end
 	def get_offset(_attrib)
 		Bgfx::bgfx_vertex_layout_get_offset(self, _attrib)
 	end
 	def get_stride()
-		Bgfx::bgfx_vertex_layout_get_stride(self, )
+		Bgfx::bgfx_vertex_layout_get_stride(self)
 	end
 	def get_size(_num)
 		Bgfx::bgfx_vertex_layout_get_size(self, _num)
@@ -1147,31 +1147,31 @@ class Bgfx_encoder_t < FFI::Struct
 	def set_marker(_marker)
 		Bgfx::bgfx_encoder_set_marker(self, _marker)
 	end
-	def set_state(_state, _rgba)
+	def set_state(_state, _rgba = 0)
 		Bgfx::bgfx_encoder_set_state(self, _state, _rgba)
 	end
 	def set_condition(_handle, _visible)
 		Bgfx::bgfx_encoder_set_condition(self, _handle, _visible)
 	end
-	def set_stencil(_fstencil, _bstencil)
+	def set_stencil(_fstencil, _bstencil = Bgfx::Stencil_None)
 		Bgfx::bgfx_encoder_set_stencil(self, _fstencil, _bstencil)
 	end
 	def set_scissor(_x, _y, _width, _height)
 		Bgfx::bgfx_encoder_set_scissor(self, _x, _y, _width, _height)
 	end
-	def set_scissor_cached(_cache)
+	def set_scissor_cached(_cache = 0xffff)
 		Bgfx::bgfx_encoder_set_scissor_cached(self, _cache)
 	end
 	def set_transform(_mtx, _num)
 		Bgfx::bgfx_encoder_set_transform(self, _mtx, _num)
 	end
-	def set_transform_cached(_cache, _num)
+	def set_transform_cached(_cache, _num = 1)
 		Bgfx::bgfx_encoder_set_transform_cached(self, _cache, _num)
 	end
 	def alloc_transform(_transform, _num)
 		Bgfx::bgfx_encoder_alloc_transform(self, _transform, _num)
 	end
-	def set_uniform(_handle, _value, _num)
+	def set_uniform(_handle, _value, _num = 1)
 		Bgfx::bgfx_encoder_set_uniform(self, _handle, _value, _num)
 	end
 	def set_index_buffer(_handle)
@@ -1195,19 +1195,19 @@ class Bgfx_encoder_t < FFI::Struct
 	def set_vertex_buffer(_stream, _handle)
 		Bgfx::bgfx_encoder_set_vertex_buffer(self, _stream, _handle)
 	end
-	def set_vertex_buffer(_stream, _handle, _startVertex, _numVertices, _layoutHandle)
+	def set_vertex_buffer(_stream, _handle, _startVertex, _numVertices, _layoutHandle = BGFX_INVALID_HANDLE)
 		Bgfx::bgfx_encoder_set_vertex_buffer(self, _stream, _handle, _startVertex, _numVertices, _layoutHandle)
 	end
 	def set_vertex_buffer(_stream, _handle)
 		Bgfx::bgfx_encoder_set_vertex_buffer(self, _stream, _handle)
 	end
-	def set_dynamic_vertex_buffer(_stream, _handle, _startVertex, _numVertices, _layoutHandle)
+	def set_dynamic_vertex_buffer(_stream, _handle, _startVertex, _numVertices, _layoutHandle = BGFX_INVALID_HANDLE)
 		Bgfx::bgfx_encoder_set_dynamic_vertex_buffer(self, _stream, _handle, _startVertex, _numVertices, _layoutHandle)
 	end
 	def set_vertex_buffer(_stream, _tvb)
 		Bgfx::bgfx_encoder_set_vertex_buffer(self, _stream, _tvb)
 	end
-	def set_transient_vertex_buffer(_stream, _tvb, _startVertex, _numVertices, _layoutHandle)
+	def set_transient_vertex_buffer(_stream, _tvb, _startVertex, _numVertices, _layoutHandle = BGFX_INVALID_HANDLE)
 		Bgfx::bgfx_encoder_set_transient_vertex_buffer(self, _stream, _tvb, _startVertex, _numVertices, _layoutHandle)
 	end
 	def set_vertex_count(_numVertices)
@@ -1234,19 +1234,19 @@ class Bgfx_encoder_t < FFI::Struct
 	def set_instance_count(_numInstances)
 		Bgfx::bgfx_encoder_set_instance_count(self, _numInstances)
 	end
-	def set_texture(_stage, _sampler, _handle, _flags)
+	def set_texture(_stage, _sampler, _handle, _flags = 0xffffffff)
 		Bgfx::bgfx_encoder_set_texture(self, _stage, _sampler, _handle, _flags)
 	end
 	def touch(_id)
 		Bgfx::bgfx_encoder_touch(self, _id)
 	end
-	def submit(_id, _program, _depth, _flags)
+	def submit(_id, _program, _depth = 0, _flags = Bgfx::Discard_All)
 		Bgfx::bgfx_encoder_submit(self, _id, _program, _depth, _flags)
 	end
-	def submit_occlusion_query(_id, _program, _occlusionQuery, _depth, _flags)
+	def submit_occlusion_query(_id, _program, _occlusionQuery, _depth = 0, _flags = Bgfx::Discard_All)
 		Bgfx::bgfx_encoder_submit_occlusion_query(self, _id, _program, _occlusionQuery, _depth, _flags)
 	end
-	def submit_indirect(_id, _program, _indirectHandle, _start, _num, _depth, _flags)
+	def submit_indirect(_id, _program, _indirectHandle, _start = 0, _num = 1, _depth = 0, _flags = Bgfx::Discard_All)
 		Bgfx::bgfx_encoder_submit_indirect(self, _id, _program, _indirectHandle, _start, _num, _depth, _flags)
 	end
 	def set_compute_index_buffer(_stage, _handle, _access)
@@ -1264,22 +1264,22 @@ class Bgfx_encoder_t < FFI::Struct
 	def set_compute_indirect_buffer(_stage, _handle, _access)
 		Bgfx::bgfx_encoder_set_compute_indirect_buffer(self, _stage, _handle, _access)
 	end
-	def set_image(_stage, _handle, _mip, _access, _format)
+	def set_image(_stage, _handle, _mip, _access, _format = Bgfx::TextureFormat::Count)
 		Bgfx::bgfx_encoder_set_image(self, _stage, _handle, _mip, _access, _format)
 	end
-	def dispatch(_id, _program, _numX, _numY, _numZ, _flags)
+	def dispatch(_id, _program, _numX = 1, _numY = 1, _numZ = 1, _flags = Bgfx::Discard_All)
 		Bgfx::bgfx_encoder_dispatch(self, _id, _program, _numX, _numY, _numZ, _flags)
 	end
-	def dispatch_indirect(_id, _program, _indirectHandle, _start, _num, _flags)
+	def dispatch_indirect(_id, _program, _indirectHandle, _start = 0, _num = 1, _flags = Bgfx::Discard_All)
 		Bgfx::bgfx_encoder_dispatch_indirect(self, _id, _program, _indirectHandle, _start, _num, _flags)
 	end
-	def discard(_flags)
+	def discard(_flags = Bgfx::Discard_All)
 		Bgfx::bgfx_encoder_discard(self, _flags)
 	end
-	def blit(_id, _dst, _dstX, _dstY, _src, _srcX, _srcY, _width, _height)
+	def blit(_id, _dst, _dstX, _dstY, _src, _srcX = 0, _srcY = 0, _width = 0xffff, _height = 0xffff)
 		Bgfx::bgfx_encoder_blit(self, _id, _dst, _dstX, _dstY, _src, _srcX, _srcY, _width, _height)
 	end
-	def blit(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth)
+	def blit(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip = 0, _srcX = 0, _srcY = 0, _srcZ = 0, _width = 0xffff, _height = 0xffff, _depth = 0xffff)
 		Bgfx::bgfx_encoder_blit(self, _id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth)
 	end
 end
@@ -3274,17 +3274,3 @@ module Bgfx
 	def self.blit(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip = 0, _srcX = 0, _srcY = 0, _srcZ = 0, _width = 0xffff, _height = 0xffff, _depth = 0xffff); return bgfx_blit(_id, _dst, _dstMip, _dstX, _dstY, _dstZ, _src, _srcMip, _srcX, _srcY, _srcZ, _width, _height, _depth); end
 	
 end # module Bgfx
-
-if __FILE__ == $0
-  Bgfx.load_lib('./libbgfx-shared-libRelease.dylib')
-  init = Bgfx_init_t.new
-  init[:type] = Bgfx::RendererType::Metal
-  init[:vendorId] = Bgfx::Pci_Id_None
-  init[:resolution][:width] = 1280
-  init[:resolution][:height] = 720
-  if Bgfx::bgfx_init(init)
-    Bgfx::bgfx_shutdown()
-  else
-    pp "Failed to initialize Bgfx"
-  end
-end
