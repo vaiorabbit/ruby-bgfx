@@ -3,6 +3,7 @@
 	* Added default argument support
 	* Added invalid handle
 	* Cleaned up generated code
+	* exmples/ruby: Added resources for Windows
 
 2020-06-19  vaiorabbit  <http://twitter.com/vaiorabbit>
 
