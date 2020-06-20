@@ -7,6 +7,10 @@
 
 WIP Ruby bindings (and bindings generator) for bgfx ( https://github.com/bkaradzic/bgfx ).
 
+## Restrictions / Known issues##
+
+*   Features relating to multithreaded rendering are not tested (and maybe unusable)
+
 ## License ##
 
 Generated Ruby bindings (bindings/ruby/bgfx.rb) is available under the terms of zlib/libpng License ( http://opensource.org/licenses/Zlib ).
