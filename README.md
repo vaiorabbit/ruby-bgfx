@@ -7,7 +7,7 @@
 
 WIP Ruby bindings (and bindings generator) for bgfx ( https://github.com/bkaradzic/bgfx ).
 
-## Restrictions / Known issues##
+## Restrictions / Known issues ##
 
 *   Features relating to multithreaded rendering are not tested (and maybe unusable)
 
