@@ -7,6 +7,21 @@ require_relative '../common/sample'
 
 ################################################################################
 
+def orthoOffCenter(mtx4, left, right, bottom, top, znear, zfar, offset = 0.0, homogeneousNDC = true, rh = true)
+  tx = (left+right) / (left-right)
+  ty = (top+bottom) / (bottom-top)
+  tz = homogeneousNDC ? (zfar+znear) / (znear-zfar) : znear / (znear-zfar)
+
+  mtx4.setIdentity()
+
+  mtx4.setElement( 0, 0, 2.0/(right-left) )
+  mtx4.setElement( 1, 1, 2.0/(top-bottom) )
+  mtx4.setElement( 2, 2, (rh ? -1.0 : 1.0) * (homogeneousNDC ? 2.0 : 1.0)/(zfar-znear) )
+  mtx4.setElement( 0, 3, tx )
+  mtx4.setElement( 1, 3, ty )
+  mtx4.setElement( 2, 3, tz )
+end
+
 class Sample03 < Sample
 
   class PosColorTexCoord0Vertex < FFI::Struct
@@ -51,21 +66,17 @@ class Sample03 < Sample
       minv = -1.0
       maxu =  1.0
       maxv =  1.0
-      # pp minx, maxx, miny, maxy, minu, minv, maxu, maxv
 
-      vertex = PosColorTexCoord0Vertex.new() #tvb[:data] + 0 * PosColorTexCoord0Vertex.size)
+      vertex = PosColorTexCoord0Vertex.new
+
       vertex[:m_x] = minx
       vertex[:m_y] = miny
       vertex[:m_z] = zz
       vertex[:m_abgr] = 0xff0000ff
       vertex[:m_u] = minu
       vertex[:m_v] = minv
-      #pp vertex.values
-      #pp vertex.to_ptr.read_string(PosColorTexCoord0Vertex.size)
       tvb[:data].put_bytes(0 * PosColorTexCoord0Vertex.size, vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size))
-      # pp tvb[:data].get_bytes(0 * PosColorTexCoord0Vertex.size, PosColorTexCoord0Vertex.size)
 
-      # vertex = PosColorTexCoord0Vertex.new(tvb[:data] + 1 * PosColorTexCoord0Vertex.size)
       vertex[:m_x] = maxx
       vertex[:m_y] = miny
       vertex[:m_z] = zz
@@ -73,11 +84,7 @@ class Sample03 < Sample
       vertex[:m_u] = maxu
       vertex[:m_v] = minv
       tvb[:data].put_bytes(1 * PosColorTexCoord0Vertex.size, vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size))
-      #tvb[:data].put_string(1 * PosColorTexCoord0Vertex.size, vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size))
-      #pp vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size)
-      #pp tvb[:data].get_bytes(1 * PosColorTexCoord0Vertex.size, PosColorTexCoord0Vertex.size)
 
-      # vertex = PosColorTexCoord0Vertex.new(tvb[:data] + 2 * PosColorTexCoord0Vertex.size)
       vertex[:m_x] = maxx
       vertex[:m_y] = maxy
       vertex[:m_z] = zz
@@ -85,10 +92,7 @@ class Sample03 < Sample
       vertex[:m_u] = maxu
       vertex[:m_v] = maxv
       tvb[:data].put_bytes(2 * PosColorTexCoord0Vertex.size, vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size))
-      #tvb[:data].put_string(2 * PosColorTexCoord0Vertex.size, vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size))
-      #pp vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size)
 
-      # vertex = PosColorTexCoord0Vertex.new(tvb[:data] + 3 * PosColorTexCoord0Vertex.size)
       vertex[:m_x] = minx
       vertex[:m_y] = maxy
       vertex[:m_z] = zz
@@ -96,8 +100,6 @@ class Sample03 < Sample
       vertex[:m_u] = minu
       vertex[:m_v] = maxv
       tvb[:data].put_bytes(3 * PosColorTexCoord0Vertex.size, vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size))
-      #tvb[:data].put_string(3 * PosColorTexCoord0Vertex.size, vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size))
-      #pp vertex.to_ptr.read_bytes(PosColorTexCoord0Vertex.size)
 
       tib[:data].write_array_of_ushort([0, 2, 1, 0, 3, 2])
 
@@ -124,7 +126,7 @@ class Sample03 < Sample
     init[:vendorId] = Bgfx::Pci_Id_None
     init[:resolution][:width] = width
     init[:resolution][:height] = height
-    init[:resolution][:reset] = reset
+    init[:resolution][:reset] = reset | Bgfx::Reset_Vsync
     init[:limits][:maxEncoders] = 1
     init[:limits][:transientVbSize] = 6<<20
     init[:limits][:transientIbSize] = 2<<20
@@ -133,8 +135,8 @@ class Sample03 < Sample
 
     ImGui::ImplBgfx_Init()
 
-    Bgfx::set_debug(debug)# | Bgfx::Debug_Stats)
-    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303030ff, 1.0, 0)
+    Bgfx::set_debug(debug)
+    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
 
     PosColorTexCoord0Vertex.init()
 
@@ -176,26 +178,20 @@ class Sample03 < Sample
 
     Bgfx::reset(@window_width, @window_height, @reset)
 
-    # ImGui::NewFrame()
-    # ImGui::PushFont(ImGui::ImplBgfx_GetFont())
-    # ImGui::ShowDemoWindow()
-    # ImGui::PopFont()
-    # ImGui::Render()
-    # ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
-
     Bgfx::set_view_rect(0, 0, 0, @window_width, @window_height)
     Bgfx::set_view_rect(1, 0, 0, @window_width, @window_height)
     Bgfx::touch(0)
 
     Bgfx::set_view_transform(0, @view, @proj)
 
-    mtx_ortho = RMtx4.new.orthoOffCenterRH(0.0, 1280.0, 720, 0.0, 100.0, 0.0)
+    mtx_ortho = RMtx4.new
+    orthoOffCenter(mtx_ortho, 0.0, 1280.0, 720.0, 0.0, 0.0, 100.0)
     ortho =  FFI::MemoryPointer.new(:float, 16)
     ortho.write_array_of_float(mtx_ortho.to_a)
 
     Bgfx::set_view_transform(1, nil, ortho)
 
-    vp = @mtx_view * @mtx_proj
+    vp = @mtx_proj * @mtx_view
 
     mtx = RMtx4.new.rotationY(@time * 0.37) * RMtx4.new.rotationX(@time)
 
@@ -207,7 +203,7 @@ class Sample03 < Sample
 
     Bgfx::set_uniform(@u_lightDirTime, lightDirTime.to_a.pack("F4"))
 
-    mvp = mtx * vp
+    mvp = vp * mtx
     invMvp = mvp.getInverse()
     Bgfx::set_uniform(@u_mtx, invMvp.to_a.pack("F16"))
 
