@@ -2,6 +2,7 @@
 
 	* Added default argument support
 	* Added invalid handle
+	* Cleaned up generated code
 
 2020-06-19  vaiorabbit  <http://twitter.com/vaiorabbit>
 

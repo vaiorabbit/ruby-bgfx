@@ -1355,376 +1355,580 @@ module Bgfx
   InvalidHandle = Bgfx_invalid_handle_t.create
 
   def self.import_symbols()
-    attach_function :bgfx_attachment_init, :bgfx_attachment_init, [Bgfx_attachment_t.by_ref, Bgfx_texture_handle_t.by_value, :Bgfx_access_t, :uint16, :uint16, :uint8], :void
-
-    attach_function :bgfx_vertex_layout_begin, :bgfx_vertex_layout_begin, [Bgfx_vertex_layout_t.by_ref, :Bgfx_renderer_type_t], :pointer
-
-    attach_function :bgfx_vertex_layout_add, :bgfx_vertex_layout_add, [Bgfx_vertex_layout_t.by_ref, :Bgfx_attrib_t, :uint8, :Bgfx_attrib_type_t, :bool, :bool], :pointer
-
-    attach_function :bgfx_vertex_layout_decode, :bgfx_vertex_layout_decode, [Bgfx_vertex_layout_t.by_ref, :Bgfx_attrib_t, :pointer, :pointer, :pointer, :pointer], :void
-
-    attach_function :bgfx_vertex_layout_has, :bgfx_vertex_layout_has, [Bgfx_vertex_layout_t.by_ref, :Bgfx_attrib_t], :bool
-
-    attach_function :bgfx_vertex_layout_skip, :bgfx_vertex_layout_skip, [Bgfx_vertex_layout_t.by_ref, :uint8], :pointer
-
-    attach_function :bgfx_vertex_layout_end, :bgfx_vertex_layout_end, [Bgfx_vertex_layout_t.by_ref], :void
-
-    attach_function :bgfx_vertex_pack, :bgfx_vertex_pack, [:pointer, :bool, :Bgfx_attrib_t, :pointer, :pointer, :uint32], :void
-
-    attach_function :bgfx_vertex_unpack, :bgfx_vertex_unpack, [:pointer, :Bgfx_attrib_t, :pointer, :pointer, :uint32], :void
-
-    attach_function :bgfx_vertex_convert, :bgfx_vertex_convert, [:pointer, :pointer, :pointer, :pointer, :uint32], :void
-
-    attach_function :bgfx_weld_vertices, :bgfx_weld_vertices, [:pointer, :pointer, :pointer, :uint16, :float], :uint16
-
-    attach_function :bgfx_topology_convert, :bgfx_topology_convert, [:Bgfx_topology_convert_t, :pointer, :uint32, :pointer, :uint32, :bool], :uint32
-
-    attach_function :bgfx_topology_sort_tri_list, :bgfx_topology_sort_tri_list, [:Bgfx_topology_sort_t, :pointer, :uint32, :pointer, :pointer, :pointer, :uint32, :pointer, :uint32, :bool], :void
-
-    attach_function :bgfx_get_supported_renderers, :bgfx_get_supported_renderers, [:uint8, :pointer], :uint8
-
-    attach_function :bgfx_get_renderer_name, :bgfx_get_renderer_name, [:Bgfx_renderer_type_t], :string
-
-    attach_function :bgfx_init_ctor, :bgfx_init_ctor, [:pointer], :void
-
-    attach_function :bgfx_init, :bgfx_init, [:pointer], :bool
-
-    attach_function :bgfx_shutdown, :bgfx_shutdown, [], :void
-
-    attach_function :bgfx_reset, :bgfx_reset, [:uint32, :uint32, :uint32, :Bgfx_texture_format_t], :void
-
-    attach_function :bgfx_frame, :bgfx_frame, [:bool], :uint32
-
-    attach_function :bgfx_get_renderer_type, :bgfx_get_renderer_type, [], :Bgfx_renderer_type_t
-
-    attach_function :bgfx_get_caps, :bgfx_get_caps, [], :pointer
-
-    attach_function :bgfx_get_stats, :bgfx_get_stats, [], :pointer
-
-    attach_function :bgfx_alloc, :bgfx_alloc, [:uint32], :pointer
-
-    attach_function :bgfx_copy, :bgfx_copy, [:pointer, :uint32], :pointer
-
-    attach_function :bgfx_make_ref, :bgfx_make_ref, [:pointer, :uint32], :pointer
-
-    attach_function :bgfx_make_ref_release, :bgfx_make_ref_release, [:pointer, :uint32, :pointer, :pointer], :pointer
-
-    attach_function :bgfx_set_debug, :bgfx_set_debug, [:uint32], :void
-
-    attach_function :bgfx_dbg_text_clear, :bgfx_dbg_text_clear, [:uint8, :bool], :void
-
-    attach_function :bgfx_dbg_text_printf, :bgfx_dbg_text_printf, [:uint16, :uint16, :uint8, :string, :varargs], :void
-
-    attach_function :bgfx_dbg_text_vprintf, :bgfx_dbg_text_vprintf, [:uint16, :uint16, :uint8, :string, :pointer], :void
-
-    attach_function :bgfx_dbg_text_image, :bgfx_dbg_text_image, [:uint16, :uint16, :uint16, :uint16, :pointer, :uint16], :void
-
-    attach_function :bgfx_create_index_buffer, :bgfx_create_index_buffer, [:pointer, :uint16], Bgfx_index_buffer_handle_t.by_value
-
-    attach_function :bgfx_set_index_buffer_name, :bgfx_set_index_buffer_name, [Bgfx_index_buffer_handle_t.by_value, :string, :int32], :void
-
-    attach_function :bgfx_destroy_index_buffer, :bgfx_destroy_index_buffer, [Bgfx_index_buffer_handle_t.by_value], :void
-
-    attach_function :bgfx_create_vertex_layout, :bgfx_create_vertex_layout, [:pointer], Bgfx_vertex_layout_handle_t.by_value
-
-    attach_function :bgfx_destroy_vertex_layout, :bgfx_destroy_vertex_layout, [Bgfx_vertex_layout_handle_t.by_value], :void
-
-    attach_function :bgfx_create_vertex_buffer, :bgfx_create_vertex_buffer, [:pointer, :pointer, :uint16], Bgfx_vertex_buffer_handle_t.by_value
-
-    attach_function :bgfx_set_vertex_buffer_name, :bgfx_set_vertex_buffer_name, [Bgfx_vertex_buffer_handle_t.by_value, :string, :int32], :void
-
-    attach_function :bgfx_destroy_vertex_buffer, :bgfx_destroy_vertex_buffer, [Bgfx_vertex_buffer_handle_t.by_value], :void
-
-    attach_function :bgfx_create_dynamic_index_buffer, :bgfx_create_dynamic_index_buffer, [:uint32, :uint16], Bgfx_dynamic_index_buffer_handle_t.by_value
-
-    attach_function :bgfx_create_dynamic_index_buffer_mem, :bgfx_create_dynamic_index_buffer_mem, [:pointer, :uint16], Bgfx_dynamic_index_buffer_handle_t.by_value
-
-    attach_function :bgfx_update_dynamic_index_buffer, :bgfx_update_dynamic_index_buffer, [Bgfx_dynamic_index_buffer_handle_t.by_value, :uint32, :pointer], :void
-
-    attach_function :bgfx_destroy_dynamic_index_buffer, :bgfx_destroy_dynamic_index_buffer, [Bgfx_dynamic_index_buffer_handle_t.by_value], :void
-
-    attach_function :bgfx_create_dynamic_vertex_buffer, :bgfx_create_dynamic_vertex_buffer, [:uint32, :pointer, :uint16], Bgfx_dynamic_vertex_buffer_handle_t.by_value
-
-    attach_function :bgfx_create_dynamic_vertex_buffer_mem, :bgfx_create_dynamic_vertex_buffer_mem, [:pointer, :pointer, :uint16], Bgfx_dynamic_vertex_buffer_handle_t.by_value
-
-    attach_function :bgfx_update_dynamic_vertex_buffer, :bgfx_update_dynamic_vertex_buffer, [Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :pointer], :void
-
-    attach_function :bgfx_destroy_dynamic_vertex_buffer, :bgfx_destroy_dynamic_vertex_buffer, [Bgfx_dynamic_vertex_buffer_handle_t.by_value], :void
-
-    attach_function :bgfx_get_avail_transient_index_buffer, :bgfx_get_avail_transient_index_buffer, [:uint32], :uint32
-
-    attach_function :bgfx_get_avail_transient_vertex_buffer, :bgfx_get_avail_transient_vertex_buffer, [:uint32, :pointer], :uint32
-
-    attach_function :bgfx_get_avail_instance_data_buffer, :bgfx_get_avail_instance_data_buffer, [:uint32, :uint16], :uint32
-
-    attach_function :bgfx_alloc_transient_index_buffer, :bgfx_alloc_transient_index_buffer, [:pointer, :uint32], :void
-
-    attach_function :bgfx_alloc_transient_vertex_buffer, :bgfx_alloc_transient_vertex_buffer, [:pointer, :uint32, :pointer], :void
-
-    attach_function :bgfx_alloc_transient_buffers, :bgfx_alloc_transient_buffers, [:pointer, :pointer, :uint32, :pointer, :uint32], :bool
-
-    attach_function :bgfx_alloc_instance_data_buffer, :bgfx_alloc_instance_data_buffer, [:pointer, :uint32, :uint16], :void
-
-    attach_function :bgfx_create_indirect_buffer, :bgfx_create_indirect_buffer, [:uint32], Bgfx_indirect_buffer_handle_t.by_value
-
-    attach_function :bgfx_destroy_indirect_buffer, :bgfx_destroy_indirect_buffer, [Bgfx_indirect_buffer_handle_t.by_value], :void
-
-    attach_function :bgfx_create_shader, :bgfx_create_shader, [:pointer], Bgfx_shader_handle_t.by_value
-
-    attach_function :bgfx_get_shader_uniforms, :bgfx_get_shader_uniforms, [Bgfx_shader_handle_t.by_value, :pointer, :uint16], :uint16
-
-    attach_function :bgfx_set_shader_name, :bgfx_set_shader_name, [Bgfx_shader_handle_t.by_value, :string, :int32], :void
-
-    attach_function :bgfx_destroy_shader, :bgfx_destroy_shader, [Bgfx_shader_handle_t.by_value], :void
-
-    attach_function :bgfx_create_program, :bgfx_create_program, [Bgfx_shader_handle_t.by_value, Bgfx_shader_handle_t.by_value, :bool], Bgfx_program_handle_t.by_value
-
-    attach_function :bgfx_create_compute_program, :bgfx_create_compute_program, [Bgfx_shader_handle_t.by_value, :bool], Bgfx_program_handle_t.by_value
-
-    attach_function :bgfx_destroy_program, :bgfx_destroy_program, [Bgfx_program_handle_t.by_value], :void
-
-    attach_function :bgfx_is_texture_valid, :bgfx_is_texture_valid, [:uint16, :bool, :uint16, :Bgfx_texture_format_t, :uint64], :bool
-
-    attach_function :bgfx_calc_texture_size, :bgfx_calc_texture_size, [:pointer, :uint16, :uint16, :uint16, :bool, :bool, :uint16, :Bgfx_texture_format_t], :void
-
-    attach_function :bgfx_create_texture, :bgfx_create_texture, [:pointer, :uint64, :uint8, :pointer], Bgfx_texture_handle_t.by_value
-
-    attach_function :bgfx_create_texture_2d, :bgfx_create_texture_2d, [:uint16, :uint16, :bool, :uint16, :Bgfx_texture_format_t, :uint64, :pointer], Bgfx_texture_handle_t.by_value
-
-    attach_function :bgfx_create_texture_2d_scaled, :bgfx_create_texture_2d_scaled, [:Bgfx_backbuffer_ratio_t, :bool, :uint16, :Bgfx_texture_format_t, :uint64], Bgfx_texture_handle_t.by_value
-
-    attach_function :bgfx_create_texture_3d, :bgfx_create_texture_3d, [:uint16, :uint16, :uint16, :bool, :Bgfx_texture_format_t, :uint64, :pointer], Bgfx_texture_handle_t.by_value
-
-    attach_function :bgfx_create_texture_cube, :bgfx_create_texture_cube, [:uint16, :bool, :uint16, :Bgfx_texture_format_t, :uint64, :pointer], Bgfx_texture_handle_t.by_value
-
-    attach_function :bgfx_update_texture_2d, :bgfx_update_texture_2d, [Bgfx_texture_handle_t.by_value, :uint16, :uint8, :uint16, :uint16, :uint16, :uint16, :pointer, :uint16], :void
-
-    attach_function :bgfx_update_texture_3d, :bgfx_update_texture_3d, [Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, :uint16, :uint16, :uint16, :pointer], :void
-
-    attach_function :bgfx_update_texture_cube, :bgfx_update_texture_cube, [Bgfx_texture_handle_t.by_value, :uint16, :uint8, :uint8, :uint16, :uint16, :uint16, :uint16, :pointer, :uint16], :void
-
-    attach_function :bgfx_read_texture, :bgfx_read_texture, [Bgfx_texture_handle_t.by_value, :pointer, :uint8], :uint32
-
-    attach_function :bgfx_set_texture_name, :bgfx_set_texture_name, [Bgfx_texture_handle_t.by_value, :string, :int32], :void
-
-    attach_function :bgfx_get_direct_access_ptr, :bgfx_get_direct_access_ptr, [Bgfx_texture_handle_t.by_value], :pointer
-
-    attach_function :bgfx_destroy_texture, :bgfx_destroy_texture, [Bgfx_texture_handle_t.by_value], :void
-
-    attach_function :bgfx_create_frame_buffer, :bgfx_create_frame_buffer, [:uint16, :uint16, :Bgfx_texture_format_t, :uint64], Bgfx_frame_buffer_handle_t.by_value
-
-    attach_function :bgfx_create_frame_buffer_scaled, :bgfx_create_frame_buffer_scaled, [:Bgfx_backbuffer_ratio_t, :Bgfx_texture_format_t, :uint64], Bgfx_frame_buffer_handle_t.by_value
-
-    attach_function :bgfx_create_frame_buffer_from_handles, :bgfx_create_frame_buffer_from_handles, [:uint8, :pointer, :bool], Bgfx_frame_buffer_handle_t.by_value
-
-    attach_function :bgfx_create_frame_buffer_from_attachment, :bgfx_create_frame_buffer_from_attachment, [:uint8, :pointer, :bool], Bgfx_frame_buffer_handle_t.by_value
-
-    attach_function :bgfx_create_frame_buffer_from_nwh, :bgfx_create_frame_buffer_from_nwh, [:pointer, :uint16, :uint16, :Bgfx_texture_format_t, :Bgfx_texture_format_t], Bgfx_frame_buffer_handle_t.by_value
-
-    attach_function :bgfx_set_frame_buffer_name, :bgfx_set_frame_buffer_name, [Bgfx_frame_buffer_handle_t.by_value, :string, :int32], :void
-
-    attach_function :bgfx_get_texture, :bgfx_get_texture, [Bgfx_frame_buffer_handle_t.by_value, :uint8], Bgfx_texture_handle_t.by_value
-
-    attach_function :bgfx_destroy_frame_buffer, :bgfx_destroy_frame_buffer, [Bgfx_frame_buffer_handle_t.by_value], :void
-
-    attach_function :bgfx_create_uniform, :bgfx_create_uniform, [:string, :Bgfx_uniform_type_t, :uint16], Bgfx_uniform_handle_t.by_value
-
-    attach_function :bgfx_get_uniform_info, :bgfx_get_uniform_info, [Bgfx_uniform_handle_t.by_value, :pointer], :void
-
-    attach_function :bgfx_destroy_uniform, :bgfx_destroy_uniform, [Bgfx_uniform_handle_t.by_value], :void
-
-    attach_function :bgfx_create_occlusion_query, :bgfx_create_occlusion_query, [], Bgfx_occlusion_query_handle_t.by_value
-
-    attach_function :bgfx_get_result, :bgfx_get_result, [Bgfx_occlusion_query_handle_t.by_value, :pointer], :Bgfx_occlusion_query_result_t
-
-    attach_function :bgfx_destroy_occlusion_query, :bgfx_destroy_occlusion_query, [Bgfx_occlusion_query_handle_t.by_value], :void
-
-    attach_function :bgfx_set_palette_color, :bgfx_set_palette_color, [:uint8, :pointer], :void
-
-    attach_function :bgfx_set_palette_color_rgba8, :bgfx_set_palette_color_rgba8, [:uint8, :uint32], :void
-
-    attach_function :bgfx_set_view_name, :bgfx_set_view_name, [:Bgfx_view_id_t, :string], :void
-
-    attach_function :bgfx_set_view_rect, :bgfx_set_view_rect, [:Bgfx_view_id_t, :uint16, :uint16, :uint16, :uint16], :void
-
-    attach_function :bgfx_set_view_rect_ratio, :bgfx_set_view_rect_ratio, [:Bgfx_view_id_t, :uint16, :uint16, :Bgfx_backbuffer_ratio_t], :void
-
-    attach_function :bgfx_set_view_scissor, :bgfx_set_view_scissor, [:Bgfx_view_id_t, :uint16, :uint16, :uint16, :uint16], :void
-
-    attach_function :bgfx_set_view_clear, :bgfx_set_view_clear, [:Bgfx_view_id_t, :uint16, :uint32, :float, :uint8], :void
-
-    attach_function :bgfx_set_view_clear_mrt, :bgfx_set_view_clear_mrt, [:Bgfx_view_id_t, :uint16, :float, :uint8, :uint8, :uint8, :uint8, :uint8, :uint8, :uint8, :uint8, :uint8], :void
-
-    attach_function :bgfx_set_view_mode, :bgfx_set_view_mode, [:Bgfx_view_id_t, :Bgfx_view_mode_t], :void
-
-    attach_function :bgfx_set_view_frame_buffer, :bgfx_set_view_frame_buffer, [:Bgfx_view_id_t, Bgfx_frame_buffer_handle_t.by_value], :void
-
-    attach_function :bgfx_set_view_transform, :bgfx_set_view_transform, [:Bgfx_view_id_t, :pointer, :pointer], :void
-
-    attach_function :bgfx_set_view_order, :bgfx_set_view_order, [:Bgfx_view_id_t, :uint16, :pointer], :void
-
-    attach_function :bgfx_reset_view, :bgfx_reset_view, [:Bgfx_view_id_t], :void
-
-    attach_function :bgfx_encoder_begin, :bgfx_encoder_begin, [:bool], :pointer
-
-    attach_function :bgfx_encoder_end, :bgfx_encoder_end, [:pointer], :void
-
-    attach_function :bgfx_encoder_set_marker, :bgfx_encoder_set_marker, [Bgfx_encoder_t.by_ref, :string], :void
-
-    attach_function :bgfx_encoder_set_state, :bgfx_encoder_set_state, [Bgfx_encoder_t.by_ref, :uint64, :uint32], :void
-
-    attach_function :bgfx_encoder_set_condition, :bgfx_encoder_set_condition, [Bgfx_encoder_t.by_ref, Bgfx_occlusion_query_handle_t.by_value, :bool], :void
-
-    attach_function :bgfx_encoder_set_stencil, :bgfx_encoder_set_stencil, [Bgfx_encoder_t.by_ref, :uint32, :uint32], :void
-
-    attach_function :bgfx_encoder_set_scissor, :bgfx_encoder_set_scissor, [Bgfx_encoder_t.by_ref, :uint16, :uint16, :uint16, :uint16], :uint16
-
-    attach_function :bgfx_encoder_set_scissor_cached, :bgfx_encoder_set_scissor_cached, [Bgfx_encoder_t.by_ref, :uint16], :void
-
-    attach_function :bgfx_encoder_set_transform, :bgfx_encoder_set_transform, [Bgfx_encoder_t.by_ref, :pointer, :uint16], :uint32
-
-    attach_function :bgfx_encoder_set_transform_cached, :bgfx_encoder_set_transform_cached, [Bgfx_encoder_t.by_ref, :uint32, :uint16], :void
-
-    attach_function :bgfx_encoder_alloc_transform, :bgfx_encoder_alloc_transform, [Bgfx_encoder_t.by_ref, :pointer, :uint16], :uint32
-
-    attach_function :bgfx_encoder_set_uniform, :bgfx_encoder_set_uniform, [Bgfx_encoder_t.by_ref, Bgfx_uniform_handle_t.by_value, :pointer, :uint16], :void
-
-    attach_function :bgfx_encoder_set_index_buffer, :bgfx_encoder_set_index_buffer, [Bgfx_encoder_t.by_ref, Bgfx_index_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_encoder_set_dynamic_index_buffer, :bgfx_encoder_set_dynamic_index_buffer, [Bgfx_encoder_t.by_ref, Bgfx_dynamic_index_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_encoder_set_transient_index_buffer, :bgfx_encoder_set_transient_index_buffer, [Bgfx_encoder_t.by_ref, :pointer, :uint32, :uint32], :void
-
-    attach_function :bgfx_encoder_set_vertex_buffer, :bgfx_encoder_set_vertex_buffer, [Bgfx_encoder_t.by_ref, :uint8, Bgfx_vertex_buffer_handle_t.by_value, :uint32, :uint32, Bgfx_vertex_layout_handle_t.by_value], :void
-
-    attach_function :bgfx_encoder_set_dynamic_vertex_buffer, :bgfx_encoder_set_dynamic_vertex_buffer, [Bgfx_encoder_t.by_ref, :uint8, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :uint32, Bgfx_vertex_layout_handle_t.by_value], :void
-
-    attach_function :bgfx_encoder_set_transient_vertex_buffer, :bgfx_encoder_set_transient_vertex_buffer, [Bgfx_encoder_t.by_ref, :uint8, :pointer, :uint32, :uint32, Bgfx_vertex_layout_handle_t.by_value], :void
-
-    attach_function :bgfx_encoder_set_vertex_count, :bgfx_encoder_set_vertex_count, [Bgfx_encoder_t.by_ref, :uint32], :void
-
-    attach_function :bgfx_encoder_set_instance_data_buffer, :bgfx_encoder_set_instance_data_buffer, [Bgfx_encoder_t.by_ref, :pointer, :uint32, :uint32], :void
-
-    attach_function :bgfx_encoder_set_instance_data_from_vertex_buffer, :bgfx_encoder_set_instance_data_from_vertex_buffer, [Bgfx_encoder_t.by_ref, Bgfx_vertex_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_encoder_set_instance_data_from_dynamic_vertex_buffer, :bgfx_encoder_set_instance_data_from_dynamic_vertex_buffer, [Bgfx_encoder_t.by_ref, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_encoder_set_instance_count, :bgfx_encoder_set_instance_count, [Bgfx_encoder_t.by_ref, :uint32], :void
-
-    attach_function :bgfx_encoder_set_texture, :bgfx_encoder_set_texture, [Bgfx_encoder_t.by_ref, :uint8, Bgfx_uniform_handle_t.by_value, Bgfx_texture_handle_t.by_value, :uint32], :void
-
-    attach_function :bgfx_encoder_touch, :bgfx_encoder_touch, [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t], :void
-
-    attach_function :bgfx_encoder_submit, :bgfx_encoder_submit, [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, :uint32, :uint8], :void
-
-    attach_function :bgfx_encoder_submit_occlusion_query, :bgfx_encoder_submit_occlusion_query, [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_occlusion_query_handle_t.by_value, :uint32, :uint8], :void
-
-    attach_function :bgfx_encoder_submit_indirect, :bgfx_encoder_submit_indirect, [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_indirect_buffer_handle_t.by_value, :uint16, :uint16, :uint32, :uint8], :void
-
-    attach_function :bgfx_encoder_set_compute_index_buffer, :bgfx_encoder_set_compute_index_buffer, [Bgfx_encoder_t.by_ref, :uint8, Bgfx_index_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_encoder_set_compute_vertex_buffer, :bgfx_encoder_set_compute_vertex_buffer, [Bgfx_encoder_t.by_ref, :uint8, Bgfx_vertex_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_encoder_set_compute_dynamic_index_buffer, :bgfx_encoder_set_compute_dynamic_index_buffer, [Bgfx_encoder_t.by_ref, :uint8, Bgfx_dynamic_index_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_encoder_set_compute_dynamic_vertex_buffer, :bgfx_encoder_set_compute_dynamic_vertex_buffer, [Bgfx_encoder_t.by_ref, :uint8, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_encoder_set_compute_indirect_buffer, :bgfx_encoder_set_compute_indirect_buffer, [Bgfx_encoder_t.by_ref, :uint8, Bgfx_indirect_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_encoder_set_image, :bgfx_encoder_set_image, [Bgfx_encoder_t.by_ref, :uint8, Bgfx_texture_handle_t.by_value, :uint8, :Bgfx_access_t, :Bgfx_texture_format_t], :void
-
-    attach_function :bgfx_encoder_dispatch, :bgfx_encoder_dispatch, [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, :uint32, :uint32, :uint32, :uint8], :void
-
-    attach_function :bgfx_encoder_dispatch_indirect, :bgfx_encoder_dispatch_indirect, [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_indirect_buffer_handle_t.by_value, :uint16, :uint16, :uint8], :void
-
-    attach_function :bgfx_encoder_discard, :bgfx_encoder_discard, [Bgfx_encoder_t.by_ref, :uint8], :void
-
-    attach_function :bgfx_encoder_blit, :bgfx_encoder_blit, [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, :uint16, :uint16, :uint16], :void
-
-    attach_function :bgfx_request_screen_shot, :bgfx_request_screen_shot, [Bgfx_frame_buffer_handle_t.by_value, :string], :void
-
-    attach_function :bgfx_render_frame, :bgfx_render_frame, [:int32], :Bgfx_render_frame_t
-
-    attach_function :bgfx_set_platform_data, :bgfx_set_platform_data, [:pointer], :void
-
-    attach_function :bgfx_get_internal_data, :bgfx_get_internal_data, [], :pointer
-
-    attach_function :bgfx_override_internal_texture_ptr, :bgfx_override_internal_texture_ptr, [Bgfx_texture_handle_t.by_value, :ulong], :ulong
-
-    attach_function :bgfx_override_internal_texture, :bgfx_override_internal_texture, [Bgfx_texture_handle_t.by_value, :uint16, :uint16, :uint8, :Bgfx_texture_format_t, :uint64], :ulong
-
-    attach_function :bgfx_set_marker, :bgfx_set_marker, [:string], :void
-
-    attach_function :bgfx_set_state, :bgfx_set_state, [:uint64, :uint32], :void
-
-    attach_function :bgfx_set_condition, :bgfx_set_condition, [Bgfx_occlusion_query_handle_t.by_value, :bool], :void
-
-    attach_function :bgfx_set_stencil, :bgfx_set_stencil, [:uint32, :uint32], :void
-
-    attach_function :bgfx_set_scissor, :bgfx_set_scissor, [:uint16, :uint16, :uint16, :uint16], :uint16
-
-    attach_function :bgfx_set_scissor_cached, :bgfx_set_scissor_cached, [:uint16], :void
-
-    attach_function :bgfx_set_transform, :bgfx_set_transform, [:pointer, :uint16], :uint32
-
-    attach_function :bgfx_set_transform_cached, :bgfx_set_transform_cached, [:uint32, :uint16], :void
-
-    attach_function :bgfx_alloc_transform, :bgfx_alloc_transform, [:pointer, :uint16], :uint32
-
-    attach_function :bgfx_set_uniform, :bgfx_set_uniform, [Bgfx_uniform_handle_t.by_value, :pointer, :uint16], :void
-
-    attach_function :bgfx_set_index_buffer, :bgfx_set_index_buffer, [Bgfx_index_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_set_dynamic_index_buffer, :bgfx_set_dynamic_index_buffer, [Bgfx_dynamic_index_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_set_transient_index_buffer, :bgfx_set_transient_index_buffer, [:pointer, :uint32, :uint32], :void
-
-    attach_function :bgfx_set_vertex_buffer, :bgfx_set_vertex_buffer, [:uint8, Bgfx_vertex_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_set_dynamic_vertex_buffer, :bgfx_set_dynamic_vertex_buffer, [:uint8, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_set_transient_vertex_buffer, :bgfx_set_transient_vertex_buffer, [:uint8, :pointer, :uint32, :uint32], :void
-
-    attach_function :bgfx_set_vertex_count, :bgfx_set_vertex_count, [:uint32], :void
-
-    attach_function :bgfx_set_instance_data_buffer, :bgfx_set_instance_data_buffer, [:pointer, :uint32, :uint32], :void
-
-    attach_function :bgfx_set_instance_data_from_vertex_buffer, :bgfx_set_instance_data_from_vertex_buffer, [Bgfx_vertex_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_set_instance_data_from_dynamic_vertex_buffer, :bgfx_set_instance_data_from_dynamic_vertex_buffer, [Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :uint32], :void
-
-    attach_function :bgfx_set_instance_count, :bgfx_set_instance_count, [:uint32], :void
-
-    attach_function :bgfx_set_texture, :bgfx_set_texture, [:uint8, Bgfx_uniform_handle_t.by_value, Bgfx_texture_handle_t.by_value, :uint32], :void
-
-    attach_function :bgfx_touch, :bgfx_touch, [:Bgfx_view_id_t], :void
-
-    attach_function :bgfx_submit, :bgfx_submit, [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, :uint32, :uint8], :void
-
-    attach_function :bgfx_submit_occlusion_query, :bgfx_submit_occlusion_query, [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_occlusion_query_handle_t.by_value, :uint32, :uint8], :void
-
-    attach_function :bgfx_submit_indirect, :bgfx_submit_indirect, [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_indirect_buffer_handle_t.by_value, :uint16, :uint16, :uint32, :uint8], :void
-
-    attach_function :bgfx_set_compute_index_buffer, :bgfx_set_compute_index_buffer, [:uint8, Bgfx_index_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_set_compute_vertex_buffer, :bgfx_set_compute_vertex_buffer, [:uint8, Bgfx_vertex_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_set_compute_dynamic_index_buffer, :bgfx_set_compute_dynamic_index_buffer, [:uint8, Bgfx_dynamic_index_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_set_compute_dynamic_vertex_buffer, :bgfx_set_compute_dynamic_vertex_buffer, [:uint8, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_set_compute_indirect_buffer, :bgfx_set_compute_indirect_buffer, [:uint8, Bgfx_indirect_buffer_handle_t.by_value, :Bgfx_access_t], :void
-
-    attach_function :bgfx_set_image, :bgfx_set_image, [:uint8, Bgfx_texture_handle_t.by_value, :uint8, :Bgfx_access_t, :Bgfx_texture_format_t], :void
-
-    attach_function :bgfx_dispatch, :bgfx_dispatch, [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, :uint32, :uint32, :uint32, :uint8], :void
-
-    attach_function :bgfx_dispatch_indirect, :bgfx_dispatch_indirect, [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_indirect_buffer_handle_t.by_value, :uint16, :uint16, :uint8], :void
-
-    attach_function :bgfx_discard, :bgfx_discard, [:uint8], :void
-
-    attach_function :bgfx_blit, :bgfx_blit, [:Bgfx_view_id_t, Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, :uint16, :uint16, :uint16], :void
-
+    symbols = [
+      :bgfx_attachment_init,
+      :bgfx_vertex_layout_begin,
+      :bgfx_vertex_layout_add,
+      :bgfx_vertex_layout_decode,
+      :bgfx_vertex_layout_has,
+      :bgfx_vertex_layout_skip,
+      :bgfx_vertex_layout_end,
+      :bgfx_vertex_pack,
+      :bgfx_vertex_unpack,
+      :bgfx_vertex_convert,
+      :bgfx_weld_vertices,
+      :bgfx_topology_convert,
+      :bgfx_topology_sort_tri_list,
+      :bgfx_get_supported_renderers,
+      :bgfx_get_renderer_name,
+      :bgfx_init_ctor,
+      :bgfx_init,
+      :bgfx_shutdown,
+      :bgfx_reset,
+      :bgfx_frame,
+      :bgfx_get_renderer_type,
+      :bgfx_get_caps,
+      :bgfx_get_stats,
+      :bgfx_alloc,
+      :bgfx_copy,
+      :bgfx_make_ref,
+      :bgfx_make_ref_release,
+      :bgfx_set_debug,
+      :bgfx_dbg_text_clear,
+      :bgfx_dbg_text_printf,
+      :bgfx_dbg_text_vprintf,
+      :bgfx_dbg_text_image,
+      :bgfx_create_index_buffer,
+      :bgfx_set_index_buffer_name,
+      :bgfx_destroy_index_buffer,
+      :bgfx_create_vertex_layout,
+      :bgfx_destroy_vertex_layout,
+      :bgfx_create_vertex_buffer,
+      :bgfx_set_vertex_buffer_name,
+      :bgfx_destroy_vertex_buffer,
+      :bgfx_create_dynamic_index_buffer,
+      :bgfx_create_dynamic_index_buffer_mem,
+      :bgfx_update_dynamic_index_buffer,
+      :bgfx_destroy_dynamic_index_buffer,
+      :bgfx_create_dynamic_vertex_buffer,
+      :bgfx_create_dynamic_vertex_buffer_mem,
+      :bgfx_update_dynamic_vertex_buffer,
+      :bgfx_destroy_dynamic_vertex_buffer,
+      :bgfx_get_avail_transient_index_buffer,
+      :bgfx_get_avail_transient_vertex_buffer,
+      :bgfx_get_avail_instance_data_buffer,
+      :bgfx_alloc_transient_index_buffer,
+      :bgfx_alloc_transient_vertex_buffer,
+      :bgfx_alloc_transient_buffers,
+      :bgfx_alloc_instance_data_buffer,
+      :bgfx_create_indirect_buffer,
+      :bgfx_destroy_indirect_buffer,
+      :bgfx_create_shader,
+      :bgfx_get_shader_uniforms,
+      :bgfx_set_shader_name,
+      :bgfx_destroy_shader,
+      :bgfx_create_program,
+      :bgfx_create_compute_program,
+      :bgfx_destroy_program,
+      :bgfx_is_texture_valid,
+      :bgfx_calc_texture_size,
+      :bgfx_create_texture,
+      :bgfx_create_texture_2d,
+      :bgfx_create_texture_2d_scaled,
+      :bgfx_create_texture_3d,
+      :bgfx_create_texture_cube,
+      :bgfx_update_texture_2d,
+      :bgfx_update_texture_3d,
+      :bgfx_update_texture_cube,
+      :bgfx_read_texture,
+      :bgfx_set_texture_name,
+      :bgfx_get_direct_access_ptr,
+      :bgfx_destroy_texture,
+      :bgfx_create_frame_buffer,
+      :bgfx_create_frame_buffer_scaled,
+      :bgfx_create_frame_buffer_from_handles,
+      :bgfx_create_frame_buffer_from_attachment,
+      :bgfx_create_frame_buffer_from_nwh,
+      :bgfx_set_frame_buffer_name,
+      :bgfx_get_texture,
+      :bgfx_destroy_frame_buffer,
+      :bgfx_create_uniform,
+      :bgfx_get_uniform_info,
+      :bgfx_destroy_uniform,
+      :bgfx_create_occlusion_query,
+      :bgfx_get_result,
+      :bgfx_destroy_occlusion_query,
+      :bgfx_set_palette_color,
+      :bgfx_set_palette_color_rgba8,
+      :bgfx_set_view_name,
+      :bgfx_set_view_rect,
+      :bgfx_set_view_rect_ratio,
+      :bgfx_set_view_scissor,
+      :bgfx_set_view_clear,
+      :bgfx_set_view_clear_mrt,
+      :bgfx_set_view_mode,
+      :bgfx_set_view_frame_buffer,
+      :bgfx_set_view_transform,
+      :bgfx_set_view_order,
+      :bgfx_reset_view,
+      :bgfx_encoder_begin,
+      :bgfx_encoder_end,
+      :bgfx_encoder_set_marker,
+      :bgfx_encoder_set_state,
+      :bgfx_encoder_set_condition,
+      :bgfx_encoder_set_stencil,
+      :bgfx_encoder_set_scissor,
+      :bgfx_encoder_set_scissor_cached,
+      :bgfx_encoder_set_transform,
+      :bgfx_encoder_set_transform_cached,
+      :bgfx_encoder_alloc_transform,
+      :bgfx_encoder_set_uniform,
+      :bgfx_encoder_set_index_buffer,
+      :bgfx_encoder_set_dynamic_index_buffer,
+      :bgfx_encoder_set_transient_index_buffer,
+      :bgfx_encoder_set_vertex_buffer,
+      :bgfx_encoder_set_dynamic_vertex_buffer,
+      :bgfx_encoder_set_transient_vertex_buffer,
+      :bgfx_encoder_set_vertex_count,
+      :bgfx_encoder_set_instance_data_buffer,
+      :bgfx_encoder_set_instance_data_from_vertex_buffer,
+      :bgfx_encoder_set_instance_data_from_dynamic_vertex_buffer,
+      :bgfx_encoder_set_instance_count,
+      :bgfx_encoder_set_texture,
+      :bgfx_encoder_touch,
+      :bgfx_encoder_submit,
+      :bgfx_encoder_submit_occlusion_query,
+      :bgfx_encoder_submit_indirect,
+      :bgfx_encoder_set_compute_index_buffer,
+      :bgfx_encoder_set_compute_vertex_buffer,
+      :bgfx_encoder_set_compute_dynamic_index_buffer,
+      :bgfx_encoder_set_compute_dynamic_vertex_buffer,
+      :bgfx_encoder_set_compute_indirect_buffer,
+      :bgfx_encoder_set_image,
+      :bgfx_encoder_dispatch,
+      :bgfx_encoder_dispatch_indirect,
+      :bgfx_encoder_discard,
+      :bgfx_encoder_blit,
+      :bgfx_request_screen_shot,
+      :bgfx_render_frame,
+      :bgfx_set_platform_data,
+      :bgfx_get_internal_data,
+      :bgfx_override_internal_texture_ptr,
+      :bgfx_override_internal_texture,
+      :bgfx_set_marker,
+      :bgfx_set_state,
+      :bgfx_set_condition,
+      :bgfx_set_stencil,
+      :bgfx_set_scissor,
+      :bgfx_set_scissor_cached,
+      :bgfx_set_transform,
+      :bgfx_set_transform_cached,
+      :bgfx_alloc_transform,
+      :bgfx_set_uniform,
+      :bgfx_set_index_buffer,
+      :bgfx_set_dynamic_index_buffer,
+      :bgfx_set_transient_index_buffer,
+      :bgfx_set_vertex_buffer,
+      :bgfx_set_dynamic_vertex_buffer,
+      :bgfx_set_transient_vertex_buffer,
+      :bgfx_set_vertex_count,
+      :bgfx_set_instance_data_buffer,
+      :bgfx_set_instance_data_from_vertex_buffer,
+      :bgfx_set_instance_data_from_dynamic_vertex_buffer,
+      :bgfx_set_instance_count,
+      :bgfx_set_texture,
+      :bgfx_touch,
+      :bgfx_submit,
+      :bgfx_submit_occlusion_query,
+      :bgfx_submit_indirect,
+      :bgfx_set_compute_index_buffer,
+      :bgfx_set_compute_vertex_buffer,
+      :bgfx_set_compute_dynamic_index_buffer,
+      :bgfx_set_compute_dynamic_vertex_buffer,
+      :bgfx_set_compute_indirect_buffer,
+      :bgfx_set_image,
+      :bgfx_dispatch,
+      :bgfx_dispatch_indirect,
+      :bgfx_discard,
+      :bgfx_blit,
+
+    ]
+
+    args = {
+      :bgfx_attachment_init => [Bgfx_attachment_t.by_ref, Bgfx_texture_handle_t.by_value, :Bgfx_access_t, :uint16, :uint16, :uint8],
+      :bgfx_vertex_layout_begin => [Bgfx_vertex_layout_t.by_ref, :Bgfx_renderer_type_t],
+      :bgfx_vertex_layout_add => [Bgfx_vertex_layout_t.by_ref, :Bgfx_attrib_t, :uint8, :Bgfx_attrib_type_t, :bool, :bool],
+      :bgfx_vertex_layout_decode => [Bgfx_vertex_layout_t.by_ref, :Bgfx_attrib_t, :pointer, :pointer, :pointer, :pointer],
+      :bgfx_vertex_layout_has => [Bgfx_vertex_layout_t.by_ref, :Bgfx_attrib_t],
+      :bgfx_vertex_layout_skip => [Bgfx_vertex_layout_t.by_ref, :uint8],
+      :bgfx_vertex_layout_end => [Bgfx_vertex_layout_t.by_ref],
+      :bgfx_vertex_pack => [:pointer, :bool, :Bgfx_attrib_t, :pointer, :pointer, :uint32],
+      :bgfx_vertex_unpack => [:pointer, :Bgfx_attrib_t, :pointer, :pointer, :uint32],
+      :bgfx_vertex_convert => [:pointer, :pointer, :pointer, :pointer, :uint32],
+      :bgfx_weld_vertices => [:pointer, :pointer, :pointer, :uint16, :float],
+      :bgfx_topology_convert => [:Bgfx_topology_convert_t, :pointer, :uint32, :pointer, :uint32, :bool],
+      :bgfx_topology_sort_tri_list => [:Bgfx_topology_sort_t, :pointer, :uint32, :pointer, :pointer, :pointer, :uint32, :pointer, :uint32, :bool],
+      :bgfx_get_supported_renderers => [:uint8, :pointer],
+      :bgfx_get_renderer_name => [:Bgfx_renderer_type_t],
+      :bgfx_init_ctor => [:pointer],
+      :bgfx_init => [:pointer],
+      :bgfx_shutdown => [],
+      :bgfx_reset => [:uint32, :uint32, :uint32, :Bgfx_texture_format_t],
+      :bgfx_frame => [:bool],
+      :bgfx_get_renderer_type => [],
+      :bgfx_get_caps => [],
+      :bgfx_get_stats => [],
+      :bgfx_alloc => [:uint32],
+      :bgfx_copy => [:pointer, :uint32],
+      :bgfx_make_ref => [:pointer, :uint32],
+      :bgfx_make_ref_release => [:pointer, :uint32, :pointer, :pointer],
+      :bgfx_set_debug => [:uint32],
+      :bgfx_dbg_text_clear => [:uint8, :bool],
+      :bgfx_dbg_text_printf => [:uint16, :uint16, :uint8, :string, :varargs],
+      :bgfx_dbg_text_vprintf => [:uint16, :uint16, :uint8, :string, :pointer],
+      :bgfx_dbg_text_image => [:uint16, :uint16, :uint16, :uint16, :pointer, :uint16],
+      :bgfx_create_index_buffer => [:pointer, :uint16],
+      :bgfx_set_index_buffer_name => [Bgfx_index_buffer_handle_t.by_value, :string, :int32],
+      :bgfx_destroy_index_buffer => [Bgfx_index_buffer_handle_t.by_value],
+      :bgfx_create_vertex_layout => [:pointer],
+      :bgfx_destroy_vertex_layout => [Bgfx_vertex_layout_handle_t.by_value],
+      :bgfx_create_vertex_buffer => [:pointer, :pointer, :uint16],
+      :bgfx_set_vertex_buffer_name => [Bgfx_vertex_buffer_handle_t.by_value, :string, :int32],
+      :bgfx_destroy_vertex_buffer => [Bgfx_vertex_buffer_handle_t.by_value],
+      :bgfx_create_dynamic_index_buffer => [:uint32, :uint16],
+      :bgfx_create_dynamic_index_buffer_mem => [:pointer, :uint16],
+      :bgfx_update_dynamic_index_buffer => [Bgfx_dynamic_index_buffer_handle_t.by_value, :uint32, :pointer],
+      :bgfx_destroy_dynamic_index_buffer => [Bgfx_dynamic_index_buffer_handle_t.by_value],
+      :bgfx_create_dynamic_vertex_buffer => [:uint32, :pointer, :uint16],
+      :bgfx_create_dynamic_vertex_buffer_mem => [:pointer, :pointer, :uint16],
+      :bgfx_update_dynamic_vertex_buffer => [Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :pointer],
+      :bgfx_destroy_dynamic_vertex_buffer => [Bgfx_dynamic_vertex_buffer_handle_t.by_value],
+      :bgfx_get_avail_transient_index_buffer => [:uint32],
+      :bgfx_get_avail_transient_vertex_buffer => [:uint32, :pointer],
+      :bgfx_get_avail_instance_data_buffer => [:uint32, :uint16],
+      :bgfx_alloc_transient_index_buffer => [:pointer, :uint32],
+      :bgfx_alloc_transient_vertex_buffer => [:pointer, :uint32, :pointer],
+      :bgfx_alloc_transient_buffers => [:pointer, :pointer, :uint32, :pointer, :uint32],
+      :bgfx_alloc_instance_data_buffer => [:pointer, :uint32, :uint16],
+      :bgfx_create_indirect_buffer => [:uint32],
+      :bgfx_destroy_indirect_buffer => [Bgfx_indirect_buffer_handle_t.by_value],
+      :bgfx_create_shader => [:pointer],
+      :bgfx_get_shader_uniforms => [Bgfx_shader_handle_t.by_value, :pointer, :uint16],
+      :bgfx_set_shader_name => [Bgfx_shader_handle_t.by_value, :string, :int32],
+      :bgfx_destroy_shader => [Bgfx_shader_handle_t.by_value],
+      :bgfx_create_program => [Bgfx_shader_handle_t.by_value, Bgfx_shader_handle_t.by_value, :bool],
+      :bgfx_create_compute_program => [Bgfx_shader_handle_t.by_value, :bool],
+      :bgfx_destroy_program => [Bgfx_program_handle_t.by_value],
+      :bgfx_is_texture_valid => [:uint16, :bool, :uint16, :Bgfx_texture_format_t, :uint64],
+      :bgfx_calc_texture_size => [:pointer, :uint16, :uint16, :uint16, :bool, :bool, :uint16, :Bgfx_texture_format_t],
+      :bgfx_create_texture => [:pointer, :uint64, :uint8, :pointer],
+      :bgfx_create_texture_2d => [:uint16, :uint16, :bool, :uint16, :Bgfx_texture_format_t, :uint64, :pointer],
+      :bgfx_create_texture_2d_scaled => [:Bgfx_backbuffer_ratio_t, :bool, :uint16, :Bgfx_texture_format_t, :uint64],
+      :bgfx_create_texture_3d => [:uint16, :uint16, :uint16, :bool, :Bgfx_texture_format_t, :uint64, :pointer],
+      :bgfx_create_texture_cube => [:uint16, :bool, :uint16, :Bgfx_texture_format_t, :uint64, :pointer],
+      :bgfx_update_texture_2d => [Bgfx_texture_handle_t.by_value, :uint16, :uint8, :uint16, :uint16, :uint16, :uint16, :pointer, :uint16],
+      :bgfx_update_texture_3d => [Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, :uint16, :uint16, :uint16, :pointer],
+      :bgfx_update_texture_cube => [Bgfx_texture_handle_t.by_value, :uint16, :uint8, :uint8, :uint16, :uint16, :uint16, :uint16, :pointer, :uint16],
+      :bgfx_read_texture => [Bgfx_texture_handle_t.by_value, :pointer, :uint8],
+      :bgfx_set_texture_name => [Bgfx_texture_handle_t.by_value, :string, :int32],
+      :bgfx_get_direct_access_ptr => [Bgfx_texture_handle_t.by_value],
+      :bgfx_destroy_texture => [Bgfx_texture_handle_t.by_value],
+      :bgfx_create_frame_buffer => [:uint16, :uint16, :Bgfx_texture_format_t, :uint64],
+      :bgfx_create_frame_buffer_scaled => [:Bgfx_backbuffer_ratio_t, :Bgfx_texture_format_t, :uint64],
+      :bgfx_create_frame_buffer_from_handles => [:uint8, :pointer, :bool],
+      :bgfx_create_frame_buffer_from_attachment => [:uint8, :pointer, :bool],
+      :bgfx_create_frame_buffer_from_nwh => [:pointer, :uint16, :uint16, :Bgfx_texture_format_t, :Bgfx_texture_format_t],
+      :bgfx_set_frame_buffer_name => [Bgfx_frame_buffer_handle_t.by_value, :string, :int32],
+      :bgfx_get_texture => [Bgfx_frame_buffer_handle_t.by_value, :uint8],
+      :bgfx_destroy_frame_buffer => [Bgfx_frame_buffer_handle_t.by_value],
+      :bgfx_create_uniform => [:string, :Bgfx_uniform_type_t, :uint16],
+      :bgfx_get_uniform_info => [Bgfx_uniform_handle_t.by_value, :pointer],
+      :bgfx_destroy_uniform => [Bgfx_uniform_handle_t.by_value],
+      :bgfx_create_occlusion_query => [],
+      :bgfx_get_result => [Bgfx_occlusion_query_handle_t.by_value, :pointer],
+      :bgfx_destroy_occlusion_query => [Bgfx_occlusion_query_handle_t.by_value],
+      :bgfx_set_palette_color => [:uint8, :pointer],
+      :bgfx_set_palette_color_rgba8 => [:uint8, :uint32],
+      :bgfx_set_view_name => [:Bgfx_view_id_t, :string],
+      :bgfx_set_view_rect => [:Bgfx_view_id_t, :uint16, :uint16, :uint16, :uint16],
+      :bgfx_set_view_rect_ratio => [:Bgfx_view_id_t, :uint16, :uint16, :Bgfx_backbuffer_ratio_t],
+      :bgfx_set_view_scissor => [:Bgfx_view_id_t, :uint16, :uint16, :uint16, :uint16],
+      :bgfx_set_view_clear => [:Bgfx_view_id_t, :uint16, :uint32, :float, :uint8],
+      :bgfx_set_view_clear_mrt => [:Bgfx_view_id_t, :uint16, :float, :uint8, :uint8, :uint8, :uint8, :uint8, :uint8, :uint8, :uint8, :uint8],
+      :bgfx_set_view_mode => [:Bgfx_view_id_t, :Bgfx_view_mode_t],
+      :bgfx_set_view_frame_buffer => [:Bgfx_view_id_t, Bgfx_frame_buffer_handle_t.by_value],
+      :bgfx_set_view_transform => [:Bgfx_view_id_t, :pointer, :pointer],
+      :bgfx_set_view_order => [:Bgfx_view_id_t, :uint16, :pointer],
+      :bgfx_reset_view => [:Bgfx_view_id_t],
+      :bgfx_encoder_begin => [:bool],
+      :bgfx_encoder_end => [:pointer],
+      :bgfx_encoder_set_marker => [Bgfx_encoder_t.by_ref, :string],
+      :bgfx_encoder_set_state => [Bgfx_encoder_t.by_ref, :uint64, :uint32],
+      :bgfx_encoder_set_condition => [Bgfx_encoder_t.by_ref, Bgfx_occlusion_query_handle_t.by_value, :bool],
+      :bgfx_encoder_set_stencil => [Bgfx_encoder_t.by_ref, :uint32, :uint32],
+      :bgfx_encoder_set_scissor => [Bgfx_encoder_t.by_ref, :uint16, :uint16, :uint16, :uint16],
+      :bgfx_encoder_set_scissor_cached => [Bgfx_encoder_t.by_ref, :uint16],
+      :bgfx_encoder_set_transform => [Bgfx_encoder_t.by_ref, :pointer, :uint16],
+      :bgfx_encoder_set_transform_cached => [Bgfx_encoder_t.by_ref, :uint32, :uint16],
+      :bgfx_encoder_alloc_transform => [Bgfx_encoder_t.by_ref, :pointer, :uint16],
+      :bgfx_encoder_set_uniform => [Bgfx_encoder_t.by_ref, Bgfx_uniform_handle_t.by_value, :pointer, :uint16],
+      :bgfx_encoder_set_index_buffer => [Bgfx_encoder_t.by_ref, Bgfx_index_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_encoder_set_dynamic_index_buffer => [Bgfx_encoder_t.by_ref, Bgfx_dynamic_index_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_encoder_set_transient_index_buffer => [Bgfx_encoder_t.by_ref, :pointer, :uint32, :uint32],
+      :bgfx_encoder_set_vertex_buffer => [Bgfx_encoder_t.by_ref, :uint8, Bgfx_vertex_buffer_handle_t.by_value, :uint32, :uint32, Bgfx_vertex_layout_handle_t.by_value],
+      :bgfx_encoder_set_dynamic_vertex_buffer => [Bgfx_encoder_t.by_ref, :uint8, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :uint32, Bgfx_vertex_layout_handle_t.by_value],
+      :bgfx_encoder_set_transient_vertex_buffer => [Bgfx_encoder_t.by_ref, :uint8, :pointer, :uint32, :uint32, Bgfx_vertex_layout_handle_t.by_value],
+      :bgfx_encoder_set_vertex_count => [Bgfx_encoder_t.by_ref, :uint32],
+      :bgfx_encoder_set_instance_data_buffer => [Bgfx_encoder_t.by_ref, :pointer, :uint32, :uint32],
+      :bgfx_encoder_set_instance_data_from_vertex_buffer => [Bgfx_encoder_t.by_ref, Bgfx_vertex_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_encoder_set_instance_data_from_dynamic_vertex_buffer => [Bgfx_encoder_t.by_ref, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_encoder_set_instance_count => [Bgfx_encoder_t.by_ref, :uint32],
+      :bgfx_encoder_set_texture => [Bgfx_encoder_t.by_ref, :uint8, Bgfx_uniform_handle_t.by_value, Bgfx_texture_handle_t.by_value, :uint32],
+      :bgfx_encoder_touch => [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t],
+      :bgfx_encoder_submit => [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, :uint32, :uint8],
+      :bgfx_encoder_submit_occlusion_query => [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_occlusion_query_handle_t.by_value, :uint32, :uint8],
+      :bgfx_encoder_submit_indirect => [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_indirect_buffer_handle_t.by_value, :uint16, :uint16, :uint32, :uint8],
+      :bgfx_encoder_set_compute_index_buffer => [Bgfx_encoder_t.by_ref, :uint8, Bgfx_index_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_encoder_set_compute_vertex_buffer => [Bgfx_encoder_t.by_ref, :uint8, Bgfx_vertex_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_encoder_set_compute_dynamic_index_buffer => [Bgfx_encoder_t.by_ref, :uint8, Bgfx_dynamic_index_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_encoder_set_compute_dynamic_vertex_buffer => [Bgfx_encoder_t.by_ref, :uint8, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_encoder_set_compute_indirect_buffer => [Bgfx_encoder_t.by_ref, :uint8, Bgfx_indirect_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_encoder_set_image => [Bgfx_encoder_t.by_ref, :uint8, Bgfx_texture_handle_t.by_value, :uint8, :Bgfx_access_t, :Bgfx_texture_format_t],
+      :bgfx_encoder_dispatch => [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, :uint32, :uint32, :uint32, :uint8],
+      :bgfx_encoder_dispatch_indirect => [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_indirect_buffer_handle_t.by_value, :uint16, :uint16, :uint8],
+      :bgfx_encoder_discard => [Bgfx_encoder_t.by_ref, :uint8],
+      :bgfx_encoder_blit => [Bgfx_encoder_t.by_ref, :Bgfx_view_id_t, Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, :uint16, :uint16, :uint16],
+      :bgfx_request_screen_shot => [Bgfx_frame_buffer_handle_t.by_value, :string],
+      :bgfx_render_frame => [:int32],
+      :bgfx_set_platform_data => [:pointer],
+      :bgfx_get_internal_data => [],
+      :bgfx_override_internal_texture_ptr => [Bgfx_texture_handle_t.by_value, :ulong],
+      :bgfx_override_internal_texture => [Bgfx_texture_handle_t.by_value, :uint16, :uint16, :uint8, :Bgfx_texture_format_t, :uint64],
+      :bgfx_set_marker => [:string],
+      :bgfx_set_state => [:uint64, :uint32],
+      :bgfx_set_condition => [Bgfx_occlusion_query_handle_t.by_value, :bool],
+      :bgfx_set_stencil => [:uint32, :uint32],
+      :bgfx_set_scissor => [:uint16, :uint16, :uint16, :uint16],
+      :bgfx_set_scissor_cached => [:uint16],
+      :bgfx_set_transform => [:pointer, :uint16],
+      :bgfx_set_transform_cached => [:uint32, :uint16],
+      :bgfx_alloc_transform => [:pointer, :uint16],
+      :bgfx_set_uniform => [Bgfx_uniform_handle_t.by_value, :pointer, :uint16],
+      :bgfx_set_index_buffer => [Bgfx_index_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_set_dynamic_index_buffer => [Bgfx_dynamic_index_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_set_transient_index_buffer => [:pointer, :uint32, :uint32],
+      :bgfx_set_vertex_buffer => [:uint8, Bgfx_vertex_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_set_dynamic_vertex_buffer => [:uint8, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_set_transient_vertex_buffer => [:uint8, :pointer, :uint32, :uint32],
+      :bgfx_set_vertex_count => [:uint32],
+      :bgfx_set_instance_data_buffer => [:pointer, :uint32, :uint32],
+      :bgfx_set_instance_data_from_vertex_buffer => [Bgfx_vertex_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_set_instance_data_from_dynamic_vertex_buffer => [Bgfx_dynamic_vertex_buffer_handle_t.by_value, :uint32, :uint32],
+      :bgfx_set_instance_count => [:uint32],
+      :bgfx_set_texture => [:uint8, Bgfx_uniform_handle_t.by_value, Bgfx_texture_handle_t.by_value, :uint32],
+      :bgfx_touch => [:Bgfx_view_id_t],
+      :bgfx_submit => [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, :uint32, :uint8],
+      :bgfx_submit_occlusion_query => [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_occlusion_query_handle_t.by_value, :uint32, :uint8],
+      :bgfx_submit_indirect => [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_indirect_buffer_handle_t.by_value, :uint16, :uint16, :uint32, :uint8],
+      :bgfx_set_compute_index_buffer => [:uint8, Bgfx_index_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_set_compute_vertex_buffer => [:uint8, Bgfx_vertex_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_set_compute_dynamic_index_buffer => [:uint8, Bgfx_dynamic_index_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_set_compute_dynamic_vertex_buffer => [:uint8, Bgfx_dynamic_vertex_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_set_compute_indirect_buffer => [:uint8, Bgfx_indirect_buffer_handle_t.by_value, :Bgfx_access_t],
+      :bgfx_set_image => [:uint8, Bgfx_texture_handle_t.by_value, :uint8, :Bgfx_access_t, :Bgfx_texture_format_t],
+      :bgfx_dispatch => [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, :uint32, :uint32, :uint32, :uint8],
+      :bgfx_dispatch_indirect => [:Bgfx_view_id_t, Bgfx_program_handle_t.by_value, Bgfx_indirect_buffer_handle_t.by_value, :uint16, :uint16, :uint8],
+      :bgfx_discard => [:uint8],
+      :bgfx_blit => [:Bgfx_view_id_t, Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, Bgfx_texture_handle_t.by_value, :uint8, :uint16, :uint16, :uint16, :uint16, :uint16, :uint16],
+
+    }
+
+    retvals = {
+      :bgfx_attachment_init => :void,
+      :bgfx_vertex_layout_begin => :pointer,
+      :bgfx_vertex_layout_add => :pointer,
+      :bgfx_vertex_layout_decode => :void,
+      :bgfx_vertex_layout_has => :bool,
+      :bgfx_vertex_layout_skip => :pointer,
+      :bgfx_vertex_layout_end => :void,
+      :bgfx_vertex_pack => :void,
+      :bgfx_vertex_unpack => :void,
+      :bgfx_vertex_convert => :void,
+      :bgfx_weld_vertices => :uint16,
+      :bgfx_topology_convert => :uint32,
+      :bgfx_topology_sort_tri_list => :void,
+      :bgfx_get_supported_renderers => :uint8,
+      :bgfx_get_renderer_name => :string,
+      :bgfx_init_ctor => :void,
+      :bgfx_init => :bool,
+      :bgfx_shutdown => :void,
+      :bgfx_reset => :void,
+      :bgfx_frame => :uint32,
+      :bgfx_get_renderer_type => :Bgfx_renderer_type_t,
+      :bgfx_get_caps => :pointer,
+      :bgfx_get_stats => :pointer,
+      :bgfx_alloc => :pointer,
+      :bgfx_copy => :pointer,
+      :bgfx_make_ref => :pointer,
+      :bgfx_make_ref_release => :pointer,
+      :bgfx_set_debug => :void,
+      :bgfx_dbg_text_clear => :void,
+      :bgfx_dbg_text_printf => :void,
+      :bgfx_dbg_text_vprintf => :void,
+      :bgfx_dbg_text_image => :void,
+      :bgfx_create_index_buffer => Bgfx_index_buffer_handle_t.by_value,
+      :bgfx_set_index_buffer_name => :void,
+      :bgfx_destroy_index_buffer => :void,
+      :bgfx_create_vertex_layout => Bgfx_vertex_layout_handle_t.by_value,
+      :bgfx_destroy_vertex_layout => :void,
+      :bgfx_create_vertex_buffer => Bgfx_vertex_buffer_handle_t.by_value,
+      :bgfx_set_vertex_buffer_name => :void,
+      :bgfx_destroy_vertex_buffer => :void,
+      :bgfx_create_dynamic_index_buffer => Bgfx_dynamic_index_buffer_handle_t.by_value,
+      :bgfx_create_dynamic_index_buffer_mem => Bgfx_dynamic_index_buffer_handle_t.by_value,
+      :bgfx_update_dynamic_index_buffer => :void,
+      :bgfx_destroy_dynamic_index_buffer => :void,
+      :bgfx_create_dynamic_vertex_buffer => Bgfx_dynamic_vertex_buffer_handle_t.by_value,
+      :bgfx_create_dynamic_vertex_buffer_mem => Bgfx_dynamic_vertex_buffer_handle_t.by_value,
+      :bgfx_update_dynamic_vertex_buffer => :void,
+      :bgfx_destroy_dynamic_vertex_buffer => :void,
+      :bgfx_get_avail_transient_index_buffer => :uint32,
+      :bgfx_get_avail_transient_vertex_buffer => :uint32,
+      :bgfx_get_avail_instance_data_buffer => :uint32,
+      :bgfx_alloc_transient_index_buffer => :void,
+      :bgfx_alloc_transient_vertex_buffer => :void,
+      :bgfx_alloc_transient_buffers => :bool,
+      :bgfx_alloc_instance_data_buffer => :void,
+      :bgfx_create_indirect_buffer => Bgfx_indirect_buffer_handle_t.by_value,
+      :bgfx_destroy_indirect_buffer => :void,
+      :bgfx_create_shader => Bgfx_shader_handle_t.by_value,
+      :bgfx_get_shader_uniforms => :uint16,
+      :bgfx_set_shader_name => :void,
+      :bgfx_destroy_shader => :void,
+      :bgfx_create_program => Bgfx_program_handle_t.by_value,
+      :bgfx_create_compute_program => Bgfx_program_handle_t.by_value,
+      :bgfx_destroy_program => :void,
+      :bgfx_is_texture_valid => :bool,
+      :bgfx_calc_texture_size => :void,
+      :bgfx_create_texture => Bgfx_texture_handle_t.by_value,
+      :bgfx_create_texture_2d => Bgfx_texture_handle_t.by_value,
+      :bgfx_create_texture_2d_scaled => Bgfx_texture_handle_t.by_value,
+      :bgfx_create_texture_3d => Bgfx_texture_handle_t.by_value,
+      :bgfx_create_texture_cube => Bgfx_texture_handle_t.by_value,
+      :bgfx_update_texture_2d => :void,
+      :bgfx_update_texture_3d => :void,
+      :bgfx_update_texture_cube => :void,
+      :bgfx_read_texture => :uint32,
+      :bgfx_set_texture_name => :void,
+      :bgfx_get_direct_access_ptr => :pointer,
+      :bgfx_destroy_texture => :void,
+      :bgfx_create_frame_buffer => Bgfx_frame_buffer_handle_t.by_value,
+      :bgfx_create_frame_buffer_scaled => Bgfx_frame_buffer_handle_t.by_value,
+      :bgfx_create_frame_buffer_from_handles => Bgfx_frame_buffer_handle_t.by_value,
+      :bgfx_create_frame_buffer_from_attachment => Bgfx_frame_buffer_handle_t.by_value,
+      :bgfx_create_frame_buffer_from_nwh => Bgfx_frame_buffer_handle_t.by_value,
+      :bgfx_set_frame_buffer_name => :void,
+      :bgfx_get_texture => Bgfx_texture_handle_t.by_value,
+      :bgfx_destroy_frame_buffer => :void,
+      :bgfx_create_uniform => Bgfx_uniform_handle_t.by_value,
+      :bgfx_get_uniform_info => :void,
+      :bgfx_destroy_uniform => :void,
+      :bgfx_create_occlusion_query => Bgfx_occlusion_query_handle_t.by_value,
+      :bgfx_get_result => :Bgfx_occlusion_query_result_t,
+      :bgfx_destroy_occlusion_query => :void,
+      :bgfx_set_palette_color => :void,
+      :bgfx_set_palette_color_rgba8 => :void,
+      :bgfx_set_view_name => :void,
+      :bgfx_set_view_rect => :void,
+      :bgfx_set_view_rect_ratio => :void,
+      :bgfx_set_view_scissor => :void,
+      :bgfx_set_view_clear => :void,
+      :bgfx_set_view_clear_mrt => :void,
+      :bgfx_set_view_mode => :void,
+      :bgfx_set_view_frame_buffer => :void,
+      :bgfx_set_view_transform => :void,
+      :bgfx_set_view_order => :void,
+      :bgfx_reset_view => :void,
+      :bgfx_encoder_begin => :pointer,
+      :bgfx_encoder_end => :void,
+      :bgfx_encoder_set_marker => :void,
+      :bgfx_encoder_set_state => :void,
+      :bgfx_encoder_set_condition => :void,
+      :bgfx_encoder_set_stencil => :void,
+      :bgfx_encoder_set_scissor => :uint16,
+      :bgfx_encoder_set_scissor_cached => :void,
+      :bgfx_encoder_set_transform => :uint32,
+      :bgfx_encoder_set_transform_cached => :void,
+      :bgfx_encoder_alloc_transform => :uint32,
+      :bgfx_encoder_set_uniform => :void,
+      :bgfx_encoder_set_index_buffer => :void,
+      :bgfx_encoder_set_dynamic_index_buffer => :void,
+      :bgfx_encoder_set_transient_index_buffer => :void,
+      :bgfx_encoder_set_vertex_buffer => :void,
+      :bgfx_encoder_set_dynamic_vertex_buffer => :void,
+      :bgfx_encoder_set_transient_vertex_buffer => :void,
+      :bgfx_encoder_set_vertex_count => :void,
+      :bgfx_encoder_set_instance_data_buffer => :void,
+      :bgfx_encoder_set_instance_data_from_vertex_buffer => :void,
+      :bgfx_encoder_set_instance_data_from_dynamic_vertex_buffer => :void,
+      :bgfx_encoder_set_instance_count => :void,
+      :bgfx_encoder_set_texture => :void,
+      :bgfx_encoder_touch => :void,
+      :bgfx_encoder_submit => :void,
+      :bgfx_encoder_submit_occlusion_query => :void,
+      :bgfx_encoder_submit_indirect => :void,
+      :bgfx_encoder_set_compute_index_buffer => :void,
+      :bgfx_encoder_set_compute_vertex_buffer => :void,
+      :bgfx_encoder_set_compute_dynamic_index_buffer => :void,
+      :bgfx_encoder_set_compute_dynamic_vertex_buffer => :void,
+      :bgfx_encoder_set_compute_indirect_buffer => :void,
+      :bgfx_encoder_set_image => :void,
+      :bgfx_encoder_dispatch => :void,
+      :bgfx_encoder_dispatch_indirect => :void,
+      :bgfx_encoder_discard => :void,
+      :bgfx_encoder_blit => :void,
+      :bgfx_request_screen_shot => :void,
+      :bgfx_render_frame => :Bgfx_render_frame_t,
+      :bgfx_set_platform_data => :void,
+      :bgfx_get_internal_data => :pointer,
+      :bgfx_override_internal_texture_ptr => :ulong,
+      :bgfx_override_internal_texture => :ulong,
+      :bgfx_set_marker => :void,
+      :bgfx_set_state => :void,
+      :bgfx_set_condition => :void,
+      :bgfx_set_stencil => :void,
+      :bgfx_set_scissor => :uint16,
+      :bgfx_set_scissor_cached => :void,
+      :bgfx_set_transform => :uint32,
+      :bgfx_set_transform_cached => :void,
+      :bgfx_alloc_transform => :uint32,
+      :bgfx_set_uniform => :void,
+      :bgfx_set_index_buffer => :void,
+      :bgfx_set_dynamic_index_buffer => :void,
+      :bgfx_set_transient_index_buffer => :void,
+      :bgfx_set_vertex_buffer => :void,
+      :bgfx_set_dynamic_vertex_buffer => :void,
+      :bgfx_set_transient_vertex_buffer => :void,
+      :bgfx_set_vertex_count => :void,
+      :bgfx_set_instance_data_buffer => :void,
+      :bgfx_set_instance_data_from_vertex_buffer => :void,
+      :bgfx_set_instance_data_from_dynamic_vertex_buffer => :void,
+      :bgfx_set_instance_count => :void,
+      :bgfx_set_texture => :void,
+      :bgfx_touch => :void,
+      :bgfx_submit => :void,
+      :bgfx_submit_occlusion_query => :void,
+      :bgfx_submit_indirect => :void,
+      :bgfx_set_compute_index_buffer => :void,
+      :bgfx_set_compute_vertex_buffer => :void,
+      :bgfx_set_compute_dynamic_index_buffer => :void,
+      :bgfx_set_compute_dynamic_vertex_buffer => :void,
+      :bgfx_set_compute_indirect_buffer => :void,
+      :bgfx_set_image => :void,
+      :bgfx_dispatch => :void,
+      :bgfx_dispatch_indirect => :void,
+      :bgfx_discard => :void,
+      :bgfx_blit => :void,
+
+    }
+
+    symbols.each do |sym|
+      begin
+        attach_function sym, args[sym], retvals[sym]
+      rescue FFI::NotFoundError => error
+        $stderr.puts("[Warning] Failed to import #{sym} (#{error}).")
+      end
+    end
   end # self.import_symbols()
 
   #

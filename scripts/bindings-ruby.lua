@@ -66,7 +66,25 @@ module Bgfx
   InvalidHandle = Bgfx_invalid_handle_t.create
 
   def self.import_symbols()
-$attachfuncs
+    symbols = [
+$attachfuncsymbols
+    ]
+
+    args = {
+$attachfuncargs
+    }
+
+    retvals = {
+$attachfuncretvals
+    }
+
+    symbols.each do |sym|
+      begin
+        attach_function sym, args[sym], retvals[sym]
+      rescue FFI::NotFoundError => error
+        $stderr.puts("[Warning] Failed to import #{sym} (#{error}).")
+      end
+    end
   end # self.import_symbols()
 
 $modulefuncs
@@ -79,6 +97,10 @@ local indent = ""
 
 local typedefs_list = {}
 local methods_list = {}
+
+local attach_func_symbols = {}
+local attach_func_args = {}
+local attach_func_retvals = {}
 
 ----------------------------------------------------------------------------------------------------
 
@@ -150,6 +172,18 @@ function gen.gen()
       end
    end
 
+   for _, object in ipairs(idl["funcs"]) do
+      local co = coroutine.create(collect_attach_funcs)
+      local any
+      while true do
+         local ok, v = coroutine.resume(co, object)
+         assert(ok, debug.traceback(co, v))
+         if not v then
+            break
+         end
+      end
+   end
+
    -- 2nd pass
    local r = ruby_template:gsub("$(%l+)", function(what)
                                    local tmp = {}
@@ -169,10 +203,18 @@ function gen.gen()
                                       -- Enums / Bitflags
                                       generate(tmp, idl["types"], converter["types"])
                                       return table.concat(tmp, "\n")
-                                   elseif what == "attachfuncs" then
-                                      -- Raw functions
-                                      generate(tmp, idl["funcs"], converter["attach_funcs"])
-                                      return table.concat(tmp, "\n")
+                                   elseif what == "attachfuncsymbols" then
+                                      -- Raw function symbols(entry points)
+                                      generate(tmp, idl["funcs"], converter["attachfunc_symbols"])
+                                      return table.concat(tmp)
+                                   elseif what == "attachfuncargs" then
+                                      -- Arguments of raw functions
+                                      generate(tmp, idl["funcs"], converter["attachfunc_args"])
+                                      return table.concat(tmp)
+                                   elseif what == "attachfuncretvals" then
+                                      -- Return values of raw functions
+                                      generate(tmp, idl["funcs"], converter["attachfunc_retvals"])
+                                      return table.concat(tmp)
                                    elseif what == "modulefuncs" then
                                       -- Wrapper functions
                                       generate(tmp, idl["funcs"], converter["module_funcs"])
@@ -339,14 +381,6 @@ end
 
 ----------------------------------------------------------------------------------------------------
 
-function collect_methods_list(func)
-   if func.this ~= nil then
-      table.insert(methods_list, func)
-   end
-end
-
-----------------------------------------------------------------------------------------------------
-
 function converter.handles(typ)
    -- Build handle definitions
    if typ.handle then
@@ -357,6 +391,12 @@ function converter.handles(typ)
 end
 
 ----------------------------------------------------------------------------------------------------
+
+function collect_methods_list(func)
+   if func.this ~= nil then
+      table.insert(methods_list, func)
+   end
+end
 
 function converter.structs(typ)
 
@@ -525,13 +565,10 @@ end
 
 ----------------------------------------------------------------------------------------------------
 
-function converter.attach_funcs(func)
-
+function collect_attach_funcs(func)
    if func.cpponly then
       return
    end
-
-   indent = "  "
 
    -- codes
    local args = {}
@@ -547,13 +584,44 @@ function converter.attach_funcs(func)
       table.insert(args, convert_type(arg, array_as_pointer))
    end
 
-   if static then
-      yield(indent .. indent .. convert_type(func.ret) .. "bgfx_" .. func.cname .. ", " .. table.concat(args, ", ") .. ");")
-   else
-      entry_point = ":bgfx_" .. func.cname
-      yield(indent .. indent .. "attach_function " .. entry_point .. ", " .. entry_point .. ", [" .. table.concat(args, ", ") .. "], " .. convert_type(func.ret))
+   entry_point = ":bgfx_" .. func.cname
 
+   func_sym = entry_point
+   func_arg = "[" .. table.concat(args, ", ") .. "]"
+   func_ret = convert_type(func.ret)
+
+   attach_func_symbols[func.cname] = func_sym
+   attach_func_args[func_sym] = func_arg
+   attach_func_retvals[func_sym] = func_ret
+end
+
+function converter.attachfunc_symbols(func)
+   if func.cpponly then
+      return
    end
+
+   indent = "      "
+   yield(indent .. attach_func_symbols[func.cname] .. ",\n")
+end
+
+function converter.attachfunc_args(func)
+   if func.cpponly then
+      return
+   end
+
+   indent = "      "
+   entry_point = attach_func_symbols[func.cname]
+   yield(indent .. entry_point .. " => " .. attach_func_args[entry_point] .. ",\n")
+end
+
+function converter.attachfunc_retvals(func)
+   if func.cpponly then
+      return
+   end
+
+   indent = "      "
+   entry_point = attach_func_symbols[func.cname]
+   yield(indent .. entry_point .. " => " .. attach_func_retvals[entry_point] .. ",\n")
 end
 
 ----------------------------------------------------------------------------------------------------
