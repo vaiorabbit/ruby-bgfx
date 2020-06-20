@@ -9,12 +9,13 @@ require_relative 'common/utils'
 require_relative 'common/sample'
 require_relative '00-helloworld/00_helloworld'
 require_relative '01-cubes/01_cubes'
+require_relative '03-raymarch/raymarch'
 require_relative '06-bump/06_bump'
 
 include RMath3D
 
 SDL2.load_lib(SampleUtils.sdl2_dll_path())
-Bgfx.load_lib(SampleUtils.bgfx_dll_path())
+Bgfx.load_lib(SampleUtils.bgfx_dll_path("Debug"))
 ImGui.load_lib(SampleUtils.imgui_dll_path())
 
 class Application
@@ -73,6 +74,7 @@ class Application
     ImGui::ImplSDL2_Init(@window)
 
     @samples = [
+      Sample03.new,
       Sample00.new,
       Sample01.new,
       Sample06.new,
