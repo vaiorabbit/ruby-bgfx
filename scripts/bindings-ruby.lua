@@ -6,6 +6,8 @@ local codegen = require "codegen"
 local idl = codegen.idl "bgfx.idl"
 
 local ruby_template = [[
+# [NOTE] Generated automatically with Ruby-bgfx ( https://github.com/vaiorabbit/ruby-bgfx ). Do NOT edit.
+
 require 'ffi'
 
 #
@@ -13,7 +15,6 @@ require 'ffi'
 #
 
 FFI.typedef :uint16, :Bgfx_view_id_t # [HACK] Hard-coded. Seems we can't get information about this from current 'bgfx.idl'.
-
 $typedefs
 
 #
@@ -21,22 +22,33 @@ $typedefs
 #
 module Bgfx
 
-    extend FFI::Library
+  extend FFI::Library
 
-    @@bgfx_import_done = false
+  @@bgfx_import_done = false
 
-    def self.load_lib(libpath = './libbgfx-shared-libRelease.dylib')
-      ffi_lib_flags :now, :global
-      ffi_lib libpath
-      import_symbols() unless @@bgfx_import_done
-    end
+  def self.load_lib(libpath = './libbgfx-shared-libRelease.dylib')
+    ffi_lib_flags :now, :global
+    ffi_lib libpath
+    import_symbols() unless @@bgfx_import_done
+  end
 
-    $types
+$types
 end # module Bgfx
+
 
 #
 # Structs
 #
+
+class Bgfx_invalid_handle_t < FFI::Struct
+  layout(:idx, :ushort)
+  def self.create
+    handle = new
+    handle[:idx] = Bgfx::InvalidHandleIdx
+    return handle
+  end
+end
+
 $handles
 $structs
 
@@ -44,10 +56,20 @@ $structs
 # Functions
 #
 module Bgfx
-    def self.import_symbols()
-        $attachfuncs
-    end # self.import_symbols()
-    $modulefuncs
+
+  InvalidHandleIdx = 0xffff
+
+  def self.is_valid(handle)
+    return handle[:idx] != InvalidHandleIdx
+  end
+
+  InvalidHandle = Bgfx_invalid_handle_t.create
+
+  def self.import_symbols()
+$attachfuncs
+  end # self.import_symbols()
+
+$modulefuncs
 end # module Bgfx
 ]]
 
@@ -136,24 +158,25 @@ function gen.gen()
                                       generate(tmp, idl["types"], converter["handles"])
                                       return table.concat(tmp, "\n")
                                    elseif what == "structs" then
-                                      -- General structs
+                                      -- General structs / Instance methods
                                       generate(tmp, idl["types"], converter["structs"])
                                       return table.concat(tmp, "\n")
                                    elseif what == "typedefs" then
                                       -- Typedefs
                                       generate(tmp, idl["types"], converter["typedefs"])
-                                      return table.concat(tmp, "\n")
+                                      return table.concat(tmp)
                                    elseif what == "types" then
+                                      -- Enums / Bitflags
                                       generate(tmp, idl["types"], converter["types"])
-                                      return table.concat(tmp, "\n\t")
+                                      return table.concat(tmp, "\n")
                                    elseif what == "attachfuncs" then
                                       -- Raw functions
                                       generate(tmp, idl["funcs"], converter["attach_funcs"])
-                                      return table.concat(tmp, "\n\t")
+                                      return table.concat(tmp, "\n")
                                    elseif what == "modulefuncs" then
-                                      -- Raw functions wrapper
+                                      -- Wrapper functions
                                       generate(tmp, idl["funcs"], converter["module_funcs"])
-                                      return table.concat(tmp, "\n\t")
+                                      return table.concat(tmp, "\n")
                                    end
    end)
    return r
@@ -260,6 +283,8 @@ local function sanitize_default_argument(arg_str)
 
    if arg_str == "NULL" then
       retval = "nil"
+   elseif arg_str == "BGFX_INVALID_HANDLE" then
+      retval = "Bgfx::InvalidHandle"
    elseif arg_str == "BGFX_TEXTURE_NONE|BGFX_SAMPLER_NONE" then
       retval = "Bgfx::Texture_None|Bgfx::Sampler_None"
    elseif arg_str == "BGFX_SAMPLER_U_CLAMP|BGFX_SAMPLER_V_CLAMP" then
@@ -297,9 +322,8 @@ end
 ----------------------------------------------------------------------------------------------------
 
 function collect_typedefs_list(typ)
-   -- Write typedefs
+   -- Collect list of typedefs
    if typ.enum then
-      -- Collect list of typedefs
       local typedef_name = typ.cname:gsub("^%l", string.upper)
       table.insert(typedefs_list, typedef_name)
    end
@@ -308,9 +332,8 @@ end
 function converter.typedefs(typ)
    -- Write typedefs
    if typ.enum then
-      -- Collect list of typedefs
       local typedef_name = typ.cname:gsub("^%l", string.upper)
-      yield("FFI.typedef :int, :" .. typedef_name)
+      yield("FFI.typedef :int, :" .. typedef_name .. "\n")
    end
 end
 
@@ -336,27 +359,34 @@ end
 ----------------------------------------------------------------------------------------------------
 
 function converter.structs(typ)
-   -- Build forward declarations
-   if typ.struct ~= nil then
-      class_name = typ.cname:gsub("^%l", string.upper)
-      yield("class " .. class_name .. " < FFI::Struct")
 
-      -- Member variables
-      yield("\tlayout(")
+   if typ.struct == nil then
+      return
+   end
+
+   indent = "  "
+   class_name = typ.cname:gsub("^%l", string.upper)
+   yield("class " .. class_name .. " < FFI::Struct")
+
+   -- Member variables
+   yield(indent .. "layout(")
+   if class_name == "Bgfx_encoder_t" then
+      yield(indent .. indent .. ":opaque, :pointer # dummy")
+   else
       for idx, member in ipairs(typ.struct) do
          local comments = ""
          if member.comment ~= nil then
             if #member.comment == 1 then
-               comments = "\t\t# " .. member.comment[1]
+               comments = " # " .. member.comment[1]
             else
-               yield("\n\t\t#")
+               yield("\n" .. indent .. indent .. "#")
                for _, comment in ipairs(member.comment) do
-                  yield("\t\t# " .. comment)
+                  yield(indent .. indent .. "# " .. comment)
                end
-               yield("\t\t#")
+               yield(indent .. indent .. "#")
             end
          end
-         ret = "\t\t" .. convert_struct_member(member)
+         ret = indent .. indent .. convert_struct_member(member)
          if idx < #typ.struct then
             ret = ret .. "," .. comments
          else
@@ -364,56 +394,58 @@ function converter.structs(typ)
          end
          yield(ret)
       end
-
-      yield("\t)")
-
-      -- Instance methods
-      struct_name_key = typ.cname:gsub("^bgfx_", ""):gsub("_t$", "") .. "_"
-      for _, func in ipairs(methods_list) do
-         if string.match(func.cname, "^" .. struct_name_key) ~= nil then
-            method_name = func.cname:gsub("^" .. struct_name_key, "")
-
-            local args = {}
-            local args_with_defaults = {}
-            for _, arg in ipairs(func.args) do
-               table.insert(args, arg.name)
-               if arg.default ~= nil then
-                  table.insert(args_with_defaults, arg.name .. " = " .. tostring(sanitize_default_argument(arg.default)) )
-               else
-                  table.insert(args_with_defaults, arg.name)
-               end
-            end
-
-            yield("\tdef " .. method_name .. "(" .. table.concat(args_with_defaults, ", ") .. ")")
-            if #args < 1 then
-               yield("\t\tBgfx::bgfx_" .. func.cname .. "(self)")
-            else
-               yield("\t\tBgfx::bgfx_" .. func.cname .. "(self, " .. table.concat(args, ", ") .. ")")
-            end
-            yield("\tend")
-         end
-      end
-      yield("end")
    end
+   yield(indent .. ")")
+
+   -- Instance methods
+   struct_name_key = typ.cname:gsub("^bgfx_", ""):gsub("_t$", "") .. "_"
+   for _, func in ipairs(methods_list) do
+      if string.match(func.cname, "^" .. struct_name_key) ~= nil then
+         method_name = func.cname:gsub("^" .. struct_name_key, "")
+
+         local args = {}
+         local args_with_defaults = {}
+         for _, arg in ipairs(func.args) do
+            table.insert(args, arg.name)
+            if arg.default ~= nil then
+               table.insert(args_with_defaults, arg.name .. " = " .. tostring(sanitize_default_argument(arg.default)) )
+            else
+               table.insert(args_with_defaults, arg.name)
+            end
+         end
+
+         yield("\n" .. indent .. "def " .. method_name .. "(" .. table.concat(args_with_defaults, ", ") .. ")")
+         if #args < 1 then
+            yield(indent .. indent .. "Bgfx::bgfx_" .. func.cname .. "(self)")
+         else
+            yield(indent .. indent .. "Bgfx::bgfx_" .. func.cname .. "(self, " .. table.concat(args, ", ") .. ")")
+         end
+         yield(indent .. "end")
+      end
+   end
+   yield("end")
+
 end
 
 ----------------------------------------------------------------------------------------------------
 
 function converter.types(typ)
 
+   indent = "  "
+
    if hasSuffix(typ.name, "::Enum") then
       -- Extract enum
-      yield("module " .. typ.typename .. " #enum: " .. #typ.enum)
+      yield(indent .. "module " .. typ.typename)
       for idx, enum in ipairs(typ.enum) do
          if enum.comment ~= nil then
             for _, comment in ipairs(enum.comment) do
-               yield("\t# " .. comment)
+               yield(indent .. indent .. "# " .. comment)
             end
          end
-         yield("\t" .. enum.name .. " = " .. idx - 1)
+         yield(indent .. indent .. enum.name .. " = " .. idx - 1)
       end
-      yield("\n\t\tCount = " .. #typ.enum)
-      yield("end # module " .. typ.typename)
+      yield("\n" .. indent .. indent .. "Count = " .. #typ.enum)
+      yield(indent .. "end # module " .. typ.typename)
    elseif typ.bits ~= nil then
       -- Extract bitflag / Build bitflag helper function
       local prefix = typ.name
@@ -452,14 +484,14 @@ function converter.types(typ)
             if #flag.comment == 1 then
                comments = " # " .. flag.comment[1]
             else
-               yield("#")
+               yield(indent .. "#")
                for _, comment in ipairs(flag.comment) do
-                  yield("# " .. comment)
+                  yield(indent .. "# " .. comment)
                end
-               yield("#")
+               yield(indent .. "#")
             end
          end
-         yield(to_underscorecase(prefix) .. "_" .. flag.name .. " = " .. value .. comments)
+         yield(indent .. to_underscorecase(prefix) .. "_" .. flag.name .. " = " .. value .. comments)
       end
 
       if typ.shift then
@@ -469,7 +501,7 @@ function converter.types(typ)
          if typ.desc then
             comments = string.format(" # %s bit shift", typ.desc)
          end
-         yield(name .. " = " .. value .. comments)
+         yield(indent .. name .. " = " .. value .. comments)
       end
       if typ.range then
          local name = to_underscorecase(prefix) .. "_Mask"
@@ -478,11 +510,11 @@ function converter.types(typ)
          if typ.desc then
             comments = string.format(" # %s bit mask", typ.desc)
          end
-         yield(name .. " = " .. value .. comments)
+         yield(indent .. name .. " = " .. value .. comments)
       end
 
       if typ.helper then
-         yield(string.format(
+         yield(indent .. string.format(
                   "def self.%s(v); return (v << %s) & %s; end",
                   to_underscorecase(prefix),
                   (to_underscorecase(prefix) .. "_Shift"),
@@ -495,31 +527,33 @@ end
 
 function converter.attach_funcs(func)
 
-    if func.cpponly then
-        return
-    end
+   if func.cpponly then
+      return
+   end
 
-    -- codes
-    local args = {}
-    if func.this ~= nil then
-       local ctype = string.gsub(func.this_type.ctype, "const ", "") -- remove const
-       ctype = ctype:gsub("%*$", "") -- remove *
-       ctype = ctype:gsub("^%l", string.upper) -- upcase
-       args[1] = ctype .. ".by_ref"
-    end
-    for _, arg in ipairs(func.args) do
-       -- table.insert(args, convert_type(arg) .. " " .. convert_name(arg.name))
-       local array_as_pointer = true
-       table.insert(args, convert_type(arg, array_as_pointer))
-    end
+   indent = "  "
 
-    if static then
-        yield(convert_type(func.ret) .. "bgfx_" .. func.cname .. ", " .. table.concat(args, ", ") .. ");")
-    else
-       entry_point = ":bgfx_" .. func.cname
-       yield("\tattach_function " .. entry_point .. ", " .. entry_point .. ", [" .. table.concat(args, ", ") .. "], " .. convert_type(func.ret))
+   -- codes
+   local args = {}
+   if func.this ~= nil then
+      local ctype = string.gsub(func.this_type.ctype, "const ", "") -- remove const
+      ctype = ctype:gsub("%*$", "") -- remove *
+      ctype = ctype:gsub("^%l", string.upper) -- upcase
+      args[1] = ctype .. ".by_ref"
+   end
+   for _, arg in ipairs(func.args) do
+      -- table.insert(args, convert_type(arg) .. " " .. convert_name(arg.name))
+      local array_as_pointer = true
+      table.insert(args, convert_type(arg, array_as_pointer))
+   end
 
-    end
+   if static then
+      yield(indent .. indent .. convert_type(func.ret) .. "bgfx_" .. func.cname .. ", " .. table.concat(args, ", ") .. ");")
+   else
+      entry_point = ":bgfx_" .. func.cname
+      yield(indent .. indent .. "attach_function " .. entry_point .. ", " .. entry_point .. ", [" .. table.concat(args, ", ") .. "], " .. convert_type(func.ret))
+
+   end
 end
 
 ----------------------------------------------------------------------------------------------------
@@ -534,14 +568,16 @@ function converter.module_funcs(func)
       return
    end
 
+   indent = "  "
+
    if func.comments ~= nil then
       -- comments
-      yield("#")
+      yield(indent .. "#")
       for _, line in ipairs(func.comments) do
          local line = line:gsub("@remarks", "Remarks:")
          line = line:gsub("@remark", "Remarks:")
          line = line:gsub("@(%l)(%l+)", function(a, b) return a:upper()..b..":" end)
-         yield("# " .. line)
+         yield(indent .. "# " .. line)
       end
 
       local hasParamsComments = false
@@ -553,21 +589,21 @@ function converter.module_funcs(func)
       end
 
       if hasParamsComments then
-         yield("# Params:")
+         yield(indent .. "# Params:")
       end
 
       for _, arg in ipairs(func.args) do
          if arg.comment ~= nil then
-            yield("# " .. convert_name(arg.name) .. " = " .. arg.comment[1])
+            yield(indent .. "# " .. convert_name(arg.name) .. " = " .. arg.comment[1])
             for i, comment in ipairs(arg.comment) do
                if (i > 1) then
-                  yield("# " .. comment)
+                  yield(indent .. "# " .. comment)
                end
             end
          end
       end
 
-      yield("#")
+      yield(indent .. "#")
    end
 
    -- codes
@@ -588,7 +624,9 @@ function converter.module_funcs(func)
    end
 
    entry_point = "bgfx_" .. func.cname
-   yield("def self." .. func.cname .. "(" .. table.concat(args_with_defaults, ", ") .. "); return " .. entry_point .. "(" .. table.concat(args, ", ") .. "); end")
+   yield(indent .. "def self." .. func.cname .. "(" .. table.concat(args_with_defaults, ", ") .. ")")
+   yield(indent .. indent .. "return " .. entry_point .. "(" .. table.concat(args, ", ") .. ")")
+   yield(indent .. "end")
 end
 
 ----------------------------------------------------------------------------------------------------
