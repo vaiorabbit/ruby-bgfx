@@ -1,15 +1,15 @@
 require 'rmath3d/rmath3d'
 require 'sdl2'
-require_relative '../../bindings/ruby/bgfx.rb'
-require_relative './utils.rb'
+require_relative '../../bindings/ruby/bgfx'
 require_relative 'imgui'
 require_relative 'imgui_impl_bgfx'
 require_relative 'imgui_impl_sdl2'
 
-require_relative './sample.rb'
-require_relative './00_helloworld.rb'
-require_relative './01_cubes.rb'
-require_relative './06_bump.rb'
+require_relative 'common/utils'
+require_relative 'common/sample'
+require_relative '00-helloworld/00_helloworld'
+require_relative '01-cubes/01_cubes'
+require_relative '06-bump/06_bump'
 
 include RMath3D
 

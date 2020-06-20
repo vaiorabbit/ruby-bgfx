@@ -1,9 +1,9 @@
 require 'rmath3d/rmath3d'
 require 'sdl2'
-require_relative '../../bindings/ruby/bgfx.rb'
-require_relative './utils.rb'
-require_relative 'imgui'
-require_relative 'imgui_impl_bgfx'
+require_relative '../../../bindings/ruby/bgfx'
+require_relative '../imgui'
+require_relative '../imgui_impl_bgfx'
+require_relative 'utils'
 
 class Sample
 

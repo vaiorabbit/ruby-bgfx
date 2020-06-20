@@ -1,8 +1,8 @@
 # coding: utf-8
 require 'ffi'
-require_relative '../../bindings/ruby/bgfx.rb'
+require_relative '../../bindings/ruby/bgfx'
 require_relative 'imgui'
-require_relative 'utils'
+require_relative 'common/utils'
 
 module ImGui
 

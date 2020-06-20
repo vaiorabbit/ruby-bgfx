@@ -2,8 +2,8 @@
 # Ref.: bgfx/examples/00-helloworld/helloworld.cpp
 #
 
-require_relative './sample'
-require_relative './logo.rb'
+require_relative '../common/sample.rb'
+require_relative 'logo.rb'
 
 ################################################################################
 
@@ -11,6 +11,7 @@ class Sample00 < Sample
 
   def initialize
     super("00-helloworld", "https://bkaradzic.github.io/bgfx/examples.html#helloworld", "Hello")
+    e = Bgfx_encoder_t.new
   end
 
   def setup(width, height, debug, reset)

@@ -3,7 +3,7 @@
 #       https://github.com/vaiorabbit/sdl2-bindings
 #
 
-require_relative './sample'
+require_relative '../common/sample'
 
 ################################################################################
 

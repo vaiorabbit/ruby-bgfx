@@ -3,7 +3,7 @@
 # Ref.: bgfx/examples/06-bump/bump.cpp
 #
 
-require_relative './sample'
+require_relative '../common/sample'
 
 ################################################################################
 
