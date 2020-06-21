@@ -4,11 +4,12 @@ require_relative '../../../bindings/ruby/bgfx'
 require_relative '../imgui'
 require_relative '../imgui_impl_bgfx'
 require_relative 'utils'
+require_relative 'dialog'
 
 class Sample
 
   attr_reader :name, :url, :desc
-  attr_reader :window_width, :window_height, :debug, :reset
+  attr_accessor :window_width, :window_height, :debug, :reset
 
   module State
     Continue = 0
@@ -45,6 +46,11 @@ class Sample
     @reset = reset
 
     return true
+  end
+
+  def resize(width, height)
+    @window_width = width
+    @window_height = height
   end
 
   def teardown()

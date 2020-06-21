@@ -150,7 +150,7 @@ class Sample03 < Sample
 
     @mtx_vp = @mtx_proj * @mtx_view
 
-    @mtx_ortho.orthoOffCenterRH(0.0, 1280.0, 720.0, 0.0, 0.0, 100.0, @ndc_homogeneous)
+    @mtx_ortho.orthoOffCenterRH(0.0, width, height, 0.0, 0.0, 100.0, @ndc_homogeneous)
     @ortho.write_array_of_float(@mtx_ortho.to_a)
   end
 
@@ -167,8 +167,14 @@ class Sample03 < Sample
     super()
   end
 
-  def handle_event(event)
-    super(event)
+  def resize(width, height)
+    super(width, height)
+
+    @mtx_proj.perspectiveFovRH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0, @ndc_homogeneous )
+    @proj.write_array_of_float(@mtx_proj.to_a)
+
+    @mtx_ortho.orthoOffCenterRH(0.0, width, height, 0.0, 0.0, 100.0, @ndc_homogeneous)
+    @ortho.write_array_of_float(@mtx_ortho.to_a)
   end
 
   def update(dt)
@@ -176,6 +182,13 @@ class Sample03 < Sample
     @time += dt
 
     Bgfx::reset(@window_width, @window_height, @reset)
+
+    ImGui::NewFrame()
+    ImGui::PushFont(ImGui::ImplBgfx_GetFont())
+    SampleDialog::show(self)
+    ImGui::PopFont()
+    ImGui::Render()
+    ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 
     Bgfx::set_view_rect(0, 0, 0, @window_width, @window_height)
     Bgfx::set_view_rect(1, 0, 0, @window_width, @window_height)

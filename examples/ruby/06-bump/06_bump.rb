@@ -186,8 +186,10 @@ class Sample06 < Sample
     super()
   end
 
-  def handle_event(event)
-    super(event)
+  def resize(width, height)
+    super(width, height)
+    @mtx_proj.perspectiveFovRH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0, @ndc_homogeneous )
+    @proj.write_array_of_float(@mtx_proj.to_a)
   end
 
   def update(dt)
@@ -198,7 +200,7 @@ class Sample06 < Sample
 
     ImGui::NewFrame()
     ImGui::PushFont(ImGui::ImplBgfx_GetFont())
-    ImGui::ShowDemoWindow()
+    SampleDialog::show(self)
     ImGui::PopFont()
     ImGui::Render()
     ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())

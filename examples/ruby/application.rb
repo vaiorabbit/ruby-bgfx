@@ -139,9 +139,12 @@ class Application
           when SDL_WINDOWEVENT_RESIZED
             width_current = event[:window][:data1]
             height_current = event[:window][:data2]
-            Bgfx::reset(width_current, height_current, Bgfx::Reset_None, Bgfx::TextureFormat::Count)
-            window_width = width_current
-            window_height = height_current
+            @width = width_current
+            @height = height_current
+            @current_sample.window_width = @width
+            @current_sample.window_height = @height
+
+            SDL_SetWindowSize(@window, @width, @height)
           end
         when SDL_KEYDOWN
           case event[:key][:keysym][:sym]
