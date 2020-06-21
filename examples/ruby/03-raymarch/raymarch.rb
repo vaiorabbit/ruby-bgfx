@@ -7,21 +7,6 @@ require_relative '../common/sample'
 
 ################################################################################
 
-def orthoOffCenter(mtx4, left, right, bottom, top, znear, zfar, offset = 0.0, homogeneousNDC = true, rh = true)
-  tx = (left+right) / (left-right)
-  ty = (top+bottom) / (bottom-top)
-  tz = homogeneousNDC ? (zfar+znear) / (znear-zfar) : znear / (znear-zfar)
-
-  mtx4.setIdentity()
-
-  mtx4.setElement( 0, 0, 2.0/(right-left) )
-  mtx4.setElement( 1, 1, 2.0/(top-bottom) )
-  mtx4.setElement( 2, 2, (rh ? -1.0 : 1.0) * (homogeneousNDC ? 2.0 : 1.0)/(zfar-znear) )
-  mtx4.setElement( 0, 3, tx )
-  mtx4.setElement( 1, 3, ty )
-  mtx4.setElement( 2, 3, tz )
-end
-
 class Sample03 < Sample
 
   class PosColorTexCoord0Vertex < FFI::Struct
@@ -114,9 +99,15 @@ class Sample03 < Sample
   def initialize
     super("03-raymarch", "https://bkaradzic.github.io/bgfx/examples.html#raymarch", "Updating shader uniforms.")
 
+    @ndc_homogeneous = true
+
     @m_program = nil # Bgfx_shader_handle_t
     @u_mtx = nil # Bgfx_uniform_handle_t
     @u_lightDirTime = nil # Bgfx_uniform_handle_t
+
+    @mtx_vp = nil
+    @mtx_ortho = RMtx4.new
+    @ortho =  FFI::MemoryPointer.new(:float, 16)
   end
 
   def setup(width, height, debug, reset)
@@ -132,6 +123,9 @@ class Sample03 < Sample
     init[:limits][:transientIbSize] = 2<<20
     bgfx_init_success = Bgfx::init(init)
     $stderr.puts("Failed to initialize Bgfx") unless bgfx_init_success
+
+    bgfx_caps = Bgfx_caps_t.new(Bgfx::get_caps())
+    @ndc_homogeneous = bgfx_caps[:homogeneousDepth] # Metal == fase, OpenGL == true
 
     ImGui::ImplBgfx_Init()
 
@@ -153,6 +147,11 @@ class Sample03 < Sample
 
     @mtx_proj.perspectiveFovRH(60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0)
     @proj.write_array_of_float(@mtx_proj.to_a)
+
+    @mtx_vp = @mtx_proj * @mtx_view
+
+    @mtx_ortho.orthoOffCenterRH(0.0, 1280.0, 720.0, 0.0, 0.0, 100.0, @ndc_homogeneous)
+    @ortho.write_array_of_float(@mtx_ortho.to_a)
   end
 
   def teardown()
@@ -183,15 +182,7 @@ class Sample03 < Sample
     Bgfx::touch(0)
 
     Bgfx::set_view_transform(0, @view, @proj)
-
-    mtx_ortho = RMtx4.new
-    orthoOffCenter(mtx_ortho, 0.0, 1280.0, 720.0, 0.0, 0.0, 100.0)
-    ortho =  FFI::MemoryPointer.new(:float, 16)
-    ortho.write_array_of_float(mtx_ortho.to_a)
-
-    Bgfx::set_view_transform(1, nil, ortho)
-
-    vp = @mtx_proj * @mtx_view
+    Bgfx::set_view_transform(1, nil, @ortho)
 
     mtx = RMtx4.new.rotationY(@time * 0.37) * RMtx4.new.rotationX(@time)
 
@@ -203,7 +194,7 @@ class Sample03 < Sample
 
     Bgfx::set_uniform(@u_lightDirTime, lightDirTime.to_a.pack("F4"))
 
-    mvp = vp * mtx
+    mvp = @mtx_vp * mtx
     invMvp = mvp.getInverse()
     Bgfx::set_uniform(@u_mtx, invMvp.to_a.pack("F16"))
 

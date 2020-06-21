@@ -11,7 +11,8 @@ class Sample00 < Sample
 
   def initialize
     super("00-helloworld", "https://bkaradzic.github.io/bgfx/examples.html#helloworld", "Hello")
-    e = Bgfx_encoder_t.new
+
+    @ndc_homogeneous = true
   end
 
   def setup(width, height, debug, reset)
@@ -28,6 +29,10 @@ class Sample00 < Sample
     init[:limits][:transientIbSize] = 2<<20
     bgfx_init_success = Bgfx::init(init)
     $stderr.puts("Failed to initialize Bgfx") unless bgfx_init_success
+
+    bgfx_caps = Bgfx_caps_t.new(Bgfx::get_caps())
+    @ndc_homogeneous = bgfx_caps[:homogeneousDepth]
+
     ImGui::ImplBgfx_Init()
 
     Bgfx::set_debug(debug)
@@ -39,7 +44,7 @@ class Sample00 < Sample
     @mtx_view.lookAtRH( @eye, @at, @up )
     @view.write_array_of_float(@mtx_view.to_a)
 
-    @mtx_proj.perspectiveFovRH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0 )
+    @mtx_proj.perspectiveFovRH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0, @ndc_homogeneous )
     @proj.write_array_of_float(@mtx_proj.to_a)
   end
 

@@ -27,6 +27,8 @@ module ImGui
   @@u_imageLodEnabled = nil # bgfx::UniformHandle
   @@m_viewId = 255 # bgfx::ViewId
 
+  @@ndc_homogeneous = true
+
   @@g_BackendRendererName = FFI::MemoryPointer.from_string("imgui_impl_bgfx")
 
   @@font = nil
@@ -37,6 +39,9 @@ module ImGui
   def self.ImplBgfx_Init()
     io = ImGuiIO.new(ImGui::GetIO())
     io[:BackendRendererName] = @@g_BackendRendererName
+
+    bgfx_caps = Bgfx_caps_t.new(Bgfx::get_caps())
+    @@ndc_homogeneous = bgfx_caps[:homogeneousDepth]
 
     @@m_program = BgfxUtils.load_program("vs_ocornut_imgui", "fs_ocornut_imgui", "./")
     @@u_imageLodEnabled  = Bgfx::bgfx_create_uniform("u_imageLodEnabled",  Bgfx::UniformType::Vec4, -1)
@@ -96,7 +101,7 @@ module ImGui
     Bgfx::bgfx_set_view_name(@@m_viewId, "ImGui")
     Bgfx::bgfx_set_view_mode(@@m_viewId, Bgfx::ViewMode::Sequential)
 
-    mtxOrtho = RMtx4.new.orthoRH(window_width.to_f, window_height.to_f, 0.0, 1000.0 ) # TODO bgfx::getCaps()->homogeneousDepth
+    mtxOrtho = RMtx4.new.orthoRH(window_width.to_f, window_height.to_f, 0.0, 1000.0, @@ndc_homogeneous )
     ortho =  FFI::MemoryPointer.new(:float, 16).write_array_of_float(mtxOrtho.to_a)
     Bgfx::bgfx_set_view_transform(@@m_viewId, nil, ortho)
     Bgfx::bgfx_set_view_rect(@@m_viewId, 0, 0, window_width, window_height)

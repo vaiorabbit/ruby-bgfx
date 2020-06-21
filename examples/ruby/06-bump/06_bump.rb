@@ -109,6 +109,8 @@ class Sample06 < Sample
     @m_numLights = 4 # uint16
     @m_textureColor = nil # Bgfx_texture_handle_t
     @m_textureNormal = nil # Bgfx_texture_handle_t
+
+    @ndc_homogeneous = true
   end
 
   def setup(width, height, debug, reset)
@@ -124,6 +126,9 @@ class Sample06 < Sample
     init[:limits][:transientIbSize] = 2<<20
     bgfx_init_success = Bgfx::init(init)
     $stderr.puts("Failed to initialize Bgfx") unless bgfx_init_success
+
+    bgfx_caps = Bgfx_caps_t.new(Bgfx::get_caps())
+    @ndc_homogeneous = bgfx_caps[:homogeneousDepth]
 
     ImGui::ImplBgfx_Init()
 
@@ -158,7 +163,7 @@ class Sample06 < Sample
     @mtx_view.lookAtRH( @eye, @at, @up )
     @view.write_array_of_float(@mtx_view.to_a)
 
-    @mtx_proj.perspectiveFovRH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0 )
+    @mtx_proj.perspectiveFovRH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0, @ndc_homogeneous )
     @proj.write_array_of_float(@mtx_proj.to_a)
   end
 
