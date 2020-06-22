@@ -58,9 +58,14 @@ module ImGui
 
     @@s_tex  = Bgfx::create_uniform("s_tex",  Bgfx::UniformType::Sampler, -1)
 
+    @out_ranges = ImVector.new
     if @@font == nil
       io[:Fonts].AddFontDefault()
-      @@font = io[:Fonts].AddFontFromFileTTF('./jpfont/GenShinGothic-Normal.ttf', 24.0, nil, io[:Fonts].GetGlyphRangesChineseFull())
+      builder = ImFontGlyphRangesBuilder.create
+      builder.AddRanges(io[:Fonts].GetGlyphRangesDefault())
+      builder.AddText("↺◁◻▷ℚ")
+      builder.BuildRanges(@out_ranges)
+      @@font = io[:Fonts].AddFontFromFileTTF('./font/NotoSansMath-Regular.ttf', 24.0, nil, @out_ranges[:Data])
     end
 
     pixels = FFI::MemoryPointer.new :pointer

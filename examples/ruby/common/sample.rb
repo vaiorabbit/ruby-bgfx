@@ -108,8 +108,21 @@ class SampleDialog
       ImGui::SetTooltip("Documentation: %s", :string, sample.url)
     end
     ImGui::Separator()
-    if ImGui::Button("⟳ Restart")
+    if ImGui::Button("↺")
     end
+    ImGui::SameLine()
+    if ImGui::Button("◁")
+    end
+    ImGui::SameLine()
+    if ImGui::Button("◻")
+    end
+    ImGui::SameLine()
+    if ImGui::Button("▷")
+    end
+    ImGui::SameLine()
+    if ImGui::Button("ℚ Quit")
+    end
+
     ImGui::End()
   end
 
