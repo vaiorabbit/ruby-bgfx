@@ -214,7 +214,7 @@ class Sample01 < Sample
   end
 
   def update(dt)
-    ret = super(dt)
+    super(dt)
     @time += dt
 
     Bgfx::reset(@window_width, @window_height, @reset)

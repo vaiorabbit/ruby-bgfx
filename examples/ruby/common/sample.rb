@@ -16,7 +16,9 @@ class Sample
     Next = 1
     Previous = 2
     Restart = 3
-    Quit = 4
+    Pause = 4
+    Resume = 5
+    Quit = 6
   end
 
   def initialize(name = "", url = "", desc = "")
@@ -46,6 +48,7 @@ class Sample
     @window_height = height
     @debug = debug
     @reset = reset
+    @time = 0.0
 
     return true
   end
@@ -62,7 +65,6 @@ class Sample
   end
 
   def update(dt)
-    return Sample::State::Continue
   end
 
 end
@@ -72,6 +74,7 @@ end
 class SampleDialog
 
   @@state = Sample::State::Continue
+  @@paused = false
 
   def self.get_state()
     @@state
@@ -89,17 +92,13 @@ class SampleDialog
   end
 
   def self.show(sample)
+
+    @@state = Sample::State::Continue if not @@paused
+
     ImGui::SetNextWindowPos(ImVec2.create(10.0, 50.0), ImGuiCond_FirstUseEver)
     ImGui::SetNextWindowSize(ImVec2.create(300.0, 210.0), ImGuiCond_FirstUseEver)
     ImGui::Begin(sample.name)
     ImGui::TextWrapped("%s", :string, sample.desc)
-    # if ImGui::IsItemHovered()
-    #   ImGui::BeginTooltip()
-    #   ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0)
-    #   ImGui::TextWrapped("%s", :string, sample.desc)
-    #   ImGui::PopTextWrapPos()
-    #   ImGui::EndTooltip()
-    # end
 
     ImGui::SameLine()
     if ImGui::Button("Doc")
@@ -108,19 +107,79 @@ class SampleDialog
       ImGui::SetTooltip("Documentation: %s", :string, sample.url)
     end
     ImGui::Separator()
-    if ImGui::Button("↺")
+
+    ctrl_button_wh = ImVec2.create(ImGui::GetFontSize() * 1.2, 0)
+    text_wrap_pos = ImGui::GetFontSize() * 35.0
+
+    if ImGui::Button("↺", ctrl_button_wh)
+      @@state = Sample::State::Restart
+      @@paused = false
+    elsif ImGui::IsItemHovered()
+      ImGui::BeginTooltip()
+      ImGui::PushTextWrapPos(text_wrap_pos)
+      ImGui::TextWrapped("Restart")
+      ImGui::PopTextWrapPos()
+      ImGui::EndTooltip()
     end
+
     ImGui::SameLine()
-    if ImGui::Button("◁")
+    if ImGui::Button("◁", ctrl_button_wh)
+      @@state = Sample::State::Previous
+      @@paused = false
+    elsif ImGui::IsItemHovered()
+      ImGui::BeginTooltip()
+      ImGui::PushTextWrapPos(text_wrap_pos)
+      ImGui::TextWrapped("Previous")
+      ImGui::PopTextWrapPos()
+      ImGui::EndTooltip()
     end
+
     ImGui::SameLine()
-    if ImGui::Button("◻")
+    if @@paused
+      if ImGui::Button("⧐", ctrl_button_wh)
+        @@state = Sample::State::Resume
+        @@paused = false
+      elsif ImGui::IsItemHovered()
+        ImGui::BeginTooltip()
+        ImGui::PushTextWrapPos(text_wrap_pos)
+        ImGui::TextWrapped("Resume")
+        ImGui::PopTextWrapPos()
+        ImGui::EndTooltip()
+      end
+    else
+      if ImGui::Button("◻", ctrl_button_wh)
+        @@state = Sample::State::Pause
+        @@paused = true
+      elsif ImGui::IsItemHovered()
+        ImGui::BeginTooltip()
+        ImGui::PushTextWrapPos(text_wrap_pos)
+        ImGui::TextWrapped("Pause")
+        ImGui::PopTextWrapPos()
+        ImGui::EndTooltip()
+      end
     end
+
     ImGui::SameLine()
-    if ImGui::Button("▷")
+    if ImGui::Button("▷", ctrl_button_wh)
+      @@state = Sample::State::Next
+      @@paused = false
+    elsif ImGui::IsItemHovered()
+      ImGui::BeginTooltip()
+      ImGui::PushTextWrapPos(text_wrap_pos)
+      ImGui::TextWrapped("Next")
+      ImGui::PopTextWrapPos()
+      ImGui::EndTooltip()
     end
+
     ImGui::SameLine()
-    if ImGui::Button("ℚ Quit")
+    if ImGui::Button("ℚ", ctrl_button_wh)
+      @@state = Sample::State::Quit
+    elsif ImGui::IsItemHovered()
+      ImGui::BeginTooltip()
+      ImGui::PushTextWrapPos(text_wrap_pos)
+      ImGui::TextWrapped("Quit application")
+      ImGui::PopTextWrapPos()
+      ImGui::EndTooltip()
     end
 
     ImGui::End()

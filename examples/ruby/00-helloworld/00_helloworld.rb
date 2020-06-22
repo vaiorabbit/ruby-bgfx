@@ -10,7 +10,7 @@ require_relative 'logo.rb'
 class Sample00 < Sample
 
   def initialize
-    super("00-helloworld", "https://bkaradzic.github.io/bgfx/examples.html#helloworld", "Hello")
+    super("00-helloworld", "https://bkaradzic.github.io/bgfx/examples.html#helloworld", "Initialization and debug text.")
 
     @ndc_homogeneous = true
   end
@@ -66,7 +66,7 @@ class Sample00 < Sample
   end
 
   def update(dt)
-    ret = super(dt)
+    super(dt)
     @time += dt
 
     ImGui::NewFrame()
@@ -100,8 +100,6 @@ class Sample00 < Sample
     Bgfx::dbg_text_printf(0, 2, 0x0f, "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in characters.", :int, stats[:width], :int, stats[:height], :int, stats[:textWidth], :int, stats[:textHeight])
 
     Bgfx::frame()
-
-    return ret
   end
 
 end

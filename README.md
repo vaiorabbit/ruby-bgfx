@@ -3,7 +3,7 @@
 # Yet another bgfx wrapper for Ruby #
 
 *   Created : 2020-05-30
-*   Last modified : 2020-06-22
+*   Last modified : 2020-06-23
 
 WIP Ruby bindings (and bindings generator) for bgfx ( https://github.com/bkaradzic/bgfx ).
 

@@ -58,12 +58,13 @@ module ImGui
 
     @@s_tex  = Bgfx::create_uniform("s_tex",  Bgfx::UniformType::Sampler, -1)
 
+    # TODO give customization point to users
     @out_ranges = ImVector.new
     if @@font == nil
       io[:Fonts].AddFontDefault()
       builder = ImFontGlyphRangesBuilder.create
       builder.AddRanges(io[:Fonts].GetGlyphRangesDefault())
-      builder.AddText("↺◁◻▷ℚ")
+      builder.AddText("↺◁◻▷ℚ⧐")
       builder.BuildRanges(@out_ranges)
       @@font = io[:Fonts].AddFontFromFileTTF('./font/NotoSansMath-Regular.ttf', 24.0, nil, @out_ranges[:Data])
     end

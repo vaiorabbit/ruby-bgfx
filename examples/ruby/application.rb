@@ -38,7 +38,8 @@ class Application
     @samples = nil
     @current_sample = nil
     @sample_index = 0
-    @sample_state = nil
+    # @sample_state = nil
+    # @sample_paused = false
   end
 
   def setup(width, height)
@@ -81,7 +82,8 @@ class Application
     ]
     @current_sample = nil
     @sample_index = 0
-    @sample_state = Sample::State::Next
+    #@sample_state = Sample::State::Next
+    #@sample_paused = false
   end
 
   def teardown
@@ -106,19 +108,25 @@ class Application
     @current_sample = @samples[@sample_index]
     @current_sample.setup(@width, @height, Bgfx::Debug_Text, Bgfx::Reset_None)
     SDL_SetWindowTitle(@window, "Ruby-Bgfx : #{@current_sample.name}")
-    @sample_state = Sample::State::Continue
+    sample_state = Sample::State::Continue
 
     event = SDL_Event.new
-    done = false
-    while not done
+    while sample_state != Sample::State::Quit
+
+      sample_state = SampleDialog::get_state()
+      sample_paused = sample_state == Sample::State::Pause
+
       # State transition
-      if @sample_state == Sample::State::Next or @sample_state == Sample::State::Previous
+      case sample_state
+      when Sample::State::Next, Sample::State::Previous
         @current_sample.teardown()
-        @sample_index = (@sample_index + (@sample_state == Sample::State::Next ? +1 : -1)) % @samples.length
+        @sample_index = (@sample_index + (sample_state == Sample::State::Next ? +1 : -1)) % @samples.length
         @current_sample = @samples[@sample_index]
         @current_sample.setup(@width, @height, Bgfx::Debug_Text, Bgfx::Reset_None)
         SDL_SetWindowTitle(@window, "Ruby-Bgfx : #{@current_sample.name}")
-        @sample_state = Sample::State::Continue
+      when Sample::State::Restart
+        @current_sample.teardown()
+        @current_sample.setup(@width, @height, Bgfx::Debug_Text, Bgfx::Reset_None)
       end
 
       # Calculate time
@@ -146,6 +154,7 @@ class Application
             SDL_SetWindowSize(@window, @width, @height)
           end
         when SDL_KEYDOWN
+=begin
           case event[:key][:keysym][:sym]
           when SDL2::SDLK_ESCAPE
             done = true
@@ -154,6 +163,7 @@ class Application
           when SDL2::SDLK_p
             @sample_state = Sample::State::Previous
           end
+=end
         end
 
         @current_sample.handle_event(event)
@@ -161,10 +171,7 @@ class Application
 
       # Call sample update
       ImGui::ImplSDL2_NewFrame(@window)
-      @current_sample.update(dt)
-
-      # TODO get status from SampleDialog -> switch to next/prev sample or exit from this app
-      #pp SampleDialog::get_state()
+      @current_sample.update(sample_paused ? 0.0 : dt)
     end
   end
 

@@ -193,7 +193,7 @@ class Sample06 < Sample
   end
 
   def update(dt)
-    ret = super(dt)
+    super(dt)
     @time += dt
 
     Bgfx::reset(@window_width, @window_height, @reset)
@@ -247,7 +247,6 @@ class Sample06 < Sample
 
     Bgfx::frame()
 
-    return ret
   end
 
 end
