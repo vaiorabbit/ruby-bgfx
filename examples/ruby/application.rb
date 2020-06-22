@@ -112,7 +112,7 @@ class Application
     done = false
     while not done
       # State transition
-      if @sample_state != Sample::State::Continue
+      if @sample_state == Sample::State::Next or @sample_state == Sample::State::Previous
         @current_sample.teardown()
         @sample_index = (@sample_index + (@sample_state == Sample::State::Next ? +1 : -1)) % @samples.length
         @current_sample = @samples[@sample_index]
@@ -141,8 +141,7 @@ class Application
             height_current = event[:window][:data2]
             @width = width_current
             @height = height_current
-            @current_sample.window_width = @width
-            @current_sample.window_height = @height
+            @current_sample.resize(@width, @height)
 
             SDL_SetWindowSize(@window, @width, @height)
           end
@@ -163,6 +162,9 @@ class Application
       # Call sample update
       ImGui::ImplSDL2_NewFrame(@window)
       @current_sample.update(dt)
+
+      # TODO get status from SampleDialog -> switch to next/prev sample or exit from this app
+      #pp SampleDialog::get_state()
     end
   end
 
