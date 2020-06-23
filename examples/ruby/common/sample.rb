@@ -71,7 +71,50 @@ end
 
 ####################################################################################################
 
+class SampleData
+  attr_reader :m_offset, :m_values, :m_min, :m_max, :m_avg
+
+  NumSamples = 100
+
+  def initialize
+    @m_values = Array.new(NumSamples)
+    reset()
+  end
+
+  def reset
+    @m_offset = 0
+    @m_values.fill(0.0)
+    @m_min = 0.0
+    @m_max = 0.0
+    @m_avg = 0.0
+  end
+
+  def push_sample(value)
+    @m_values[@m_offset] = value
+    @m_offset = (@m_offset + 1) % NumSamples
+
+    min = Float::MAX
+    max = -Float::MAX
+    avg = 0.0
+    NumSamples.times do |ii|
+      val = @m_values[ii]
+      min = min < val ? min : val
+      max = max > val ? max : val
+      avg += val
+    end
+
+    @m_min = min
+    @m_max = max
+    @m_avg = avg / NumSamples
+  end
+
+end
+
+####################################################################################################
+
 class SampleDialog
+
+  @@s_frame_time = SampleData.new
 
   @@state = Sample::State::Continue
   @@paused = false
@@ -180,6 +223,35 @@ class SampleDialog
       ImGui::TextWrapped("Quit application")
       ImGui::PopTextWrapPos()
       ImGui::EndTooltip()
+    end
+
+    stats = Bgfx_stats_t.new(Bgfx::get_stats())
+    toMsCpu = 1000.0/stats[:cpuTimerFreq]
+    toMsGpu = 1000.0/stats[:gpuTimerFreq]
+    frameMs = stats[:cpuTimeFrame].to_f * toMsCpu
+
+    @@s_frame_time.push_sample(frameMs.to_f)
+
+    frame_text_overlay = sprintf("↓ %.3fms, ↑ %.3fms\nAvg: %.3fms, %.1f FPS", @@s_frame_time.m_min, @@s_frame_time.m_max, @@s_frame_time.m_avg, 1000.0 / @@s_frame_time.m_avg)
+
+    ImGui::PushStyleColorVec4(ImGuiCol_PlotHistogram, ImVec4.create(0.0, 0.5, 0.15, 1.0))
+    ImGui::PlotHistogramFloatPtr("Frame",
+                                 @@s_frame_time.m_values.pack("F*"),
+                                 SampleData::NumSamples,
+                                 @@s_frame_time.m_offset,
+                                 frame_text_overlay,
+                                 0.0,
+                                 60.0,
+                                 ImVec2.create(0.0, 45.0))
+    ImGui::PopStyleColor()
+
+    ImGui::Text("Submit CPU %0.3f, GPU %0.3f (L: %d)",
+                 :float, (stats[:cpuTimeEnd] - stats[:cpuTimeBegin]).to_f * toMsCpu,
+                 :float, (stats[:gpuTimeEnd] - stats[:gpuTimeBegin]).to_f * toMsGpu,
+                 :int32, stats[:maxGpuLatency])
+
+    if stats[:gpuMemoryUsed] != -0x7fffffffffffffff # INT64_MAX
+      ImGui::Text("GPU mem: #{stats[:gpuMemoryUsed]} / #{stats[:gpuMemoryMax]}")
     end
 
     ImGui::End()
