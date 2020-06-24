@@ -82,8 +82,8 @@ class Application
     ]
     @current_sample = nil
     @sample_index = 0
-    #@sample_state = Sample::State::Next
-    #@sample_paused = false
+
+    SampleDialog::register_samples(@samples)
   end
 
   def teardown
@@ -113,7 +113,7 @@ class Application
     event = SDL_Event.new
     while sample_state != Sample::State::Quit
 
-      sample_state = SampleDialog::get_state()
+      sample_state, sample_switchto = SampleDialog::get_state() # sample_switchto == one of sample instances selected in the combobox of SampleDialog
       sample_paused = sample_state == Sample::State::Pause
 
       # State transition
@@ -121,6 +121,12 @@ class Application
       when Sample::State::Next, Sample::State::Previous
         @current_sample.teardown()
         @sample_index = (@sample_index + (sample_state == Sample::State::Next ? +1 : -1)) % @samples.length
+        @current_sample = @samples[@sample_index]
+        @current_sample.setup(@width, @height, Bgfx::Debug_Text, Bgfx::Reset_None)
+        SDL_SetWindowTitle(@window, "Ruby-Bgfx : #{@current_sample.name}")
+      when Sample::State::SwitchTo
+        @current_sample.teardown()
+        @sample_index = @samples.find_index(sample_switchto)
         @current_sample = @samples[@sample_index]
         @current_sample.setup(@width, @height, Bgfx::Debug_Text, Bgfx::Reset_None)
         SDL_SetWindowTitle(@window, "Ruby-Bgfx : #{@current_sample.name}")

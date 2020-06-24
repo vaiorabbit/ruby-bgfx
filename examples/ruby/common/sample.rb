@@ -15,10 +15,11 @@ class Sample
     Continue = 0
     Next = 1
     Previous = 2
-    Restart = 3
-    Pause = 4
-    Resume = 5
-    Quit = 6
+    SwitchTo = 3
+    Restart = 4
+    Pause = 5
+    Resume = 6
+    Quit = 7
   end
 
   def initialize(name = "", url = "", desc = "")
@@ -115,12 +116,26 @@ end
 class SampleDialog
 
   @@s_frame_time = SampleData.new
+  @@samples = nil
 
   @@state = Sample::State::Continue
+  @@info = nil
   @@paused = false
 
+  @@combo_current = nil
+  @@combo_items_string = nil
+  @@combo_items = nil
+
+  def self.register_samples(samples)
+    @@samples = samples
+
+    @@combo_current =  FFI::MemoryPointer.new(:int, 1)
+    @@combo_items_string = @@samples.map {|s| FFI::MemoryPointer.from_string(s.name)}
+    @@combo_items = FFI::MemoryPointer.new(:pointer, @@samples.length).write_array_of_pointer(@@combo_items_string)
+  end
+
   def self.get_state()
-    @@state
+    return @@state, @@info
   end
 
   def self.open_browser(url)
@@ -137,12 +152,15 @@ class SampleDialog
   def self.show(sample)
 
     @@state = Sample::State::Continue if not @@paused
+    @@info = nil
 
+    # Size and position of this window
     ImGui::SetNextWindowPos(ImVec2.create(10.0, 50.0), ImGuiCond_FirstUseEver)
-    ImGui::SetNextWindowSize(ImVec2.create(300.0, 210.0), ImGuiCond_FirstUseEver)
+    ImGui::SetNextWindowSize(ImVec2.create(300.0, 230.0), ImGuiCond_FirstUseEver)
     ImGui::Begin(sample.name)
     ImGui::TextWrapped("%s", :string, sample.desc)
 
+    # Jump to documentation
     ImGui::SameLine()
     if ImGui::Button("Doc")
       open_browser(sample.url)
@@ -151,6 +169,16 @@ class SampleDialog
     end
     ImGui::Separator()
 
+    # Example combobox
+    if @@samples != nil
+      if ImGui::ComboStr_arr("Example", @@combo_current, @@combo_items, @@samples.length)
+        @@state = Sample::State::SwitchTo
+        @@info = @@samples[@@combo_current.read_int]
+        @@paused = false
+      end
+    end
+
+    # Restart / Previous / Pause&Resume / Next / Quit
     ctrl_button_wh = ImVec2.create(ImGui::GetFontSize() * 1.2, 0)
     text_wrap_pos = ImGui::GetFontSize() * 35.0
 
@@ -168,6 +196,7 @@ class SampleDialog
     ImGui::SameLine()
     if ImGui::Button("◁", ctrl_button_wh)
       @@state = Sample::State::Previous
+      @@combo_current.write_int((@@combo_current.read_int - 1) % @@samples.length)
       @@paused = false
     elsif ImGui::IsItemHovered()
       ImGui::BeginTooltip()
@@ -205,6 +234,7 @@ class SampleDialog
     ImGui::SameLine()
     if ImGui::Button("▷", ctrl_button_wh)
       @@state = Sample::State::Next
+      @@combo_current.write_int((@@combo_current.read_int + 1) % @@samples.length)
       @@paused = false
     elsif ImGui::IsItemHovered()
       ImGui::BeginTooltip()
@@ -225,6 +255,7 @@ class SampleDialog
       ImGui::EndTooltip()
     end
 
+    # Stats
     stats = Bgfx_stats_t.new(Bgfx::get_stats())
     toMsCpu = 1000.0/stats[:cpuTimerFreq]
     toMsGpu = 1000.0/stats[:gpuTimerFreq]
@@ -232,7 +263,7 @@ class SampleDialog
 
     @@s_frame_time.push_sample(frameMs.to_f)
 
-    frame_text_overlay = sprintf("↓ %.3fms, ↑ %.3fms\nAvg: %.3fms, %.1f FPS", @@s_frame_time.m_min, @@s_frame_time.m_max, @@s_frame_time.m_avg, 1000.0 / @@s_frame_time.m_avg)
+    frame_text_overlay = sprintf("⤓ %.3fms,  ⤒ %.3fms\nAvg: %.3fms, %.1f FPS", @@s_frame_time.m_min, @@s_frame_time.m_max, @@s_frame_time.m_avg, 1000.0 / @@s_frame_time.m_avg)
 
     ImGui::PushStyleColorVec4(ImGuiCol_PlotHistogram, ImVec4.create(0.0, 0.5, 0.15, 1.0))
     ImGui::PlotHistogramFloatPtr("Frame",
@@ -242,13 +273,13 @@ class SampleDialog
                                  frame_text_overlay,
                                  0.0,
                                  60.0,
-                                 ImVec2.create(0.0, 45.0))
+                                 ImVec2.create(0.0, 50.0))
     ImGui::PopStyleColor()
 
     ImGui::Text("Submit CPU %0.3f, GPU %0.3f (L: %d)",
-                 :float, (stats[:cpuTimeEnd] - stats[:cpuTimeBegin]).to_f * toMsCpu,
-                 :float, (stats[:gpuTimeEnd] - stats[:gpuTimeBegin]).to_f * toMsGpu,
-                 :int32, stats[:maxGpuLatency])
+                :float, (stats[:cpuTimeEnd] - stats[:cpuTimeBegin]).to_f * toMsCpu,
+                :float, (stats[:gpuTimeEnd] - stats[:gpuTimeBegin]).to_f * toMsGpu,
+                :int32, stats[:maxGpuLatency])
 
     if stats[:gpuMemoryUsed] != -0x7fffffffffffffff # INT64_MAX
       ImGui::Text("GPU mem: #{stats[:gpuMemoryUsed]} / #{stats[:gpuMemoryMax]}")
