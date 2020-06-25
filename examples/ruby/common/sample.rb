@@ -126,6 +126,8 @@ class SampleDialog
   @@combo_items_string = nil
   @@combo_items = nil
 
+  @@show_stats = FFI::MemoryPointer.new(:bool, 1)
+
   def self.register_samples(samples)
     @@samples = samples
 
@@ -149,10 +151,63 @@ class SampleDialog
     end
   end
 
+  def self.bar(_width, _maxWidth, _height, _color)
+    style = ImGuiStyle.new(ImGui::GetStyle())
+
+    hoveredColor = ImVec4.create(
+      _color[:x] + _color[:x]*0.1,
+      _color[:y] + _color[:y]*0.1,
+      _color[:z] + _color[:z]*0.1,
+      _color[:w] + _color[:w]*0.1)
+
+    ImGui::PushStyleColorVec4(ImGuiCol_Button,        _color)
+    ImGui::PushStyleColorVec4(ImGuiCol_ButtonHovered, hoveredColor)
+    ImGui::PushStyleColorVec4(ImGuiCol_ButtonActive,  _color)
+    ImGui::PushStyleVarFloat(ImGuiStyleVar_FrameRounding, 0.0)
+    ImGui::PushStyleVarVec2(ImGuiStyleVar_ItemSpacing, ImVec2.create(0.0, style[:ItemSpacing][:y]) )
+
+    itemHovered = false
+
+    ImGui::Button("", ImVec2.create(_width, _height) )
+    itemHovered |= ImGui::IsItemHovered()
+
+    ImGui::SameLine()
+    ImGui::InvisibleButton("", ImVec2.create([1.0, _maxWidth-_width].max, _height))
+    itemHovered |= ImGui::IsItemHovered()
+
+    ImGui::PopStyleVar(2)
+    ImGui::PopStyleColor(3)
+
+    return itemHovered;
+  end
+
+  @@s_resourceColor = ImVec4.create(0.5, 0.5, 0.5, 1.0)
+
+  def self.resource_bar(_name, _tooltip, _num, _max, _maxWidth, _height)
+    itemHovered = false
+
+    ImGui::Text("%s: %4d / %4d", :string, _name, :int32, _num, :int32, _max)
+    itemHovered |= ImGui::IsItemHovered()
+    ImGui::SameLine()
+
+    percentage = _num.to_f / _max
+
+    itemHovered |= bar([1.0, percentage*_maxWidth].max, _maxWidth, _height, @@s_resourceColor)
+    ImGui::SameLine()
+
+    ImGui::Text("%5.2f%%", :float, percentage*100.0)
+
+    if itemHovered
+      ImGui::SetTooltip("%s %5.2f%%", :string, _tooltip, :float, percentage*100.00)
+    end
+  end
+
   def self.show(sample)
 
     @@state = Sample::State::Continue if not @@paused
     @@info = nil
+
+    ImGui::PushFont(ImGui::ImplBgfx_GetUIFont())
 
     # Size and position of this window
     ImGui::SetNextWindowPos(ImVec2.create(10.0, 50.0), ImGuiCond_FirstUseEver)
@@ -255,7 +310,18 @@ class SampleDialog
       ImGui::EndTooltip()
     end
 
-    # Stats
+    ImGui::SameLine()
+    if ImGui::Button("⤨", ctrl_button_wh)
+      @@show_stats.write(:bool, !@@show_stats.read(:bool))
+    elsif ImGui::IsItemHovered()
+      ImGui::BeginTooltip()
+      ImGui::PushTextWrapPos(text_wrap_pos)
+      ImGui::TextWrapped("Show Stats")
+      ImGui::PopTextWrapPos()
+      ImGui::EndTooltip()
+    end
+
+    # GPU/CPU time stats
     stats = Bgfx_stats_t.new(Bgfx::get_stats())
     toMsCpu = 1000.0/stats[:cpuTimerFreq]
     toMsGpu = 1000.0/stats[:gpuTimerFreq]
@@ -284,6 +350,42 @@ class SampleDialog
     if stats[:gpuMemoryUsed] != -0x7fffffffffffffff # INT64_MAX
       ImGui::Text("GPU mem: #{stats[:gpuMemoryUsed]} / #{stats[:gpuMemoryMax]}")
     end
+
+    # bgfx internal stats
+    if @@show_stats.read(:bool) == true
+      ImGui::SetNextWindowSize(ImVec2.create(300.0, 500.0), ImGuiCond_FirstUseEver)
+      if ImGui::Begin("⤨ Stats", @@show_stats)
+        if ImGui::CollapsingHeaderTreeNodeFlags("Resources")
+          caps = Bgfx_caps_t.new(Bgfx::get_caps())
+          itemHeight = ImGui::GetTextLineHeightWithSpacing()
+          maxWidth   = 90.0
+          ImGui::PushFont(ImGui::ImplBgfx_GetMonoFont())
+          ImGui::Text("Res: Num  / Max")
+          resource_bar("DIB", "Dynamic index buffers",  stats[:numDynamicIndexBuffers],  caps[:limits][:maxDynamicIndexBuffers],  maxWidth, itemHeight)
+          resource_bar("DVB", "Dynamic vertex buffers", stats[:numDynamicVertexBuffers], caps[:limits][:maxDynamicVertexBuffers], maxWidth, itemHeight)
+          resource_bar(" FB", "Frame buffers",          stats[:numFrameBuffers],         caps[:limits][:maxFrameBuffers],         maxWidth, itemHeight)
+          resource_bar(" IB", "Index buffers",          stats[:numIndexBuffers],         caps[:limits][:maxIndexBuffers],         maxWidth, itemHeight)
+          resource_bar(" OQ", "Occlusion queries",      stats[:numOcclusionQueries],     caps[:limits][:maxOcclusionQueries],     maxWidth, itemHeight)
+          resource_bar("  P", "Programs",               stats[:numPrograms],             caps[:limits][:maxPrograms],             maxWidth, itemHeight)
+          resource_bar("  S", "Shaders",                stats[:numShaders],              caps[:limits][:maxShaders],              maxWidth, itemHeight)
+          resource_bar("  T", "Textures",               stats[:numTextures],             caps[:limits][:maxTextures],             maxWidth, itemHeight)
+          resource_bar("  U", "Uniforms",               stats[:numUniforms],             caps[:limits][:maxUniforms],             maxWidth, itemHeight)
+          resource_bar(" VB", "Vertex buffers",         stats[:numVertexBuffers],        caps[:limits][:maxVertexBuffers],        maxWidth, itemHeight)
+          resource_bar(" VL", "Vertex layouts",         stats[:numVertexLayouts],        caps[:limits][:maxVertexLayouts],        maxWidth, itemHeight)
+          ImGui::PopFont()
+        end
+        if ImGui::CollapsingHeaderTreeNodeFlags("Profiler")
+          if stats[:numViews] == 0
+            ImGui::Text("Profiler is not enabled.")
+          else
+            # TODO
+          end
+        end
+      end
+      ImGui::End()
+    end
+
+    ImGui::PopFont()
 
     ImGui::End()
   end

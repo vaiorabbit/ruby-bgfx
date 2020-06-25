@@ -31,9 +31,15 @@ module ImGui
 
   @@g_BackendRendererName = FFI::MemoryPointer.from_string("imgui_impl_bgfx")
 
-  @@font = nil
-  def self.ImplBgfx_GetFont()
-    return @@font
+  @@font_mono = nil
+  @@font_ui = nil
+
+  def self.ImplBgfx_GetMonoFont()
+    return @@font_mono
+  end
+
+  def self.ImplBgfx_GetUIFont()
+    return @@font_ui
   end
 
   def self.ImplBgfx_Init()
@@ -64,14 +70,18 @@ module ImGui
 
     io[:IniFilename] = nil
 
+    if @@font_mono == nil
+      @@font_mono = io[:Fonts].AddFontDefault()
+    end
+
     @out_ranges = ImVector.new
-    if @@font == nil
+    if @@font_ui == nil
       io[:Fonts].AddFontDefault()
       builder = ImFontGlyphRangesBuilder.create
       builder.AddRanges(io[:Fonts].GetGlyphRangesDefault())
-      builder.AddText("↺◁◻▷ℚ⧐⤓⤒")
+      builder.AddText("↺◁◻▷ℚ⧐⤓⤒⤨")
       builder.BuildRanges(@out_ranges)
-      @@font = io[:Fonts].AddFontFromFileTTF('./font/NotoSansMath-Regular.ttf', 24.0, nil, @out_ranges[:Data])
+      @@font_ui = io[:Fonts].AddFontFromFileTTF('./font/NotoSansMath-Regular.ttf', 24.0, nil, @out_ranges[:Data])
     end
 
     pixels = FFI::MemoryPointer.new :pointer

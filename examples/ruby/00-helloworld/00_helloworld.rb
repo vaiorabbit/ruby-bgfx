@@ -70,9 +70,7 @@ class Sample00 < Sample
     @time += dt
 
     ImGui::NewFrame()
-    ImGui::PushFont(ImGui::ImplBgfx_GetFont())
     SampleDialog::show(self)
-    ImGui::PopFont()
     ImGui::Render()
     ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 

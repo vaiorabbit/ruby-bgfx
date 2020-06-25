@@ -220,9 +220,7 @@ class Sample01 < Sample
     Bgfx::reset(@window_width, @window_height, @reset)
 
     ImGui::NewFrame()
-    ImGui::PushFont(ImGui::ImplBgfx_GetFont())
     SampleDialog::show(self)
-    ImGui::PopFont()
     ImGui::Render()
     ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 
