@@ -274,7 +274,7 @@ class SampleDialog
         ImGui::EndTooltip()
       end
     else
-      if ImGui::Button("◻", ctrl_button_wh)
+      if ImGui::Button("||", ctrl_button_wh)
         @@state = Sample::State::Pause
         @@paused = true
       elsif ImGui::IsItemHovered()
@@ -300,7 +300,7 @@ class SampleDialog
     end
 
     ImGui::SameLine()
-    if ImGui::Button("ℚ", ctrl_button_wh)
+    if ImGui::Button("◻", ctrl_button_wh)
       @@state = Sample::State::Quit
     elsif ImGui::IsItemHovered()
       ImGui::BeginTooltip()

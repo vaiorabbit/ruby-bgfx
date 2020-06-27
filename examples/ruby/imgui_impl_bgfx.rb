@@ -79,7 +79,7 @@ module ImGui
       io[:Fonts].AddFontDefault()
       builder = ImFontGlyphRangesBuilder.create
       builder.AddRanges(io[:Fonts].GetGlyphRangesDefault())
-      builder.AddText("↺◁◻▷ℚ⧐⤓⤒⤨")
+      builder.AddText("↺◁◻▷⧐⤓⤒⤨")
       builder.BuildRanges(@out_ranges)
       @@font_ui = io[:Fonts].AddFontFromFileTTF('./font/NotoSansMath-Regular.ttf', 24.0, nil, @out_ranges[:Data])
     end
