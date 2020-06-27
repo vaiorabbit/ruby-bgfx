@@ -328,7 +328,7 @@ module Bgfx
   Reset_Capture = 0x00000200 # Begin screen capture.
   Reset_FlushAfterRender = 0x00002000 # Flush rendering after submitting to GPU.
   #
-  # This flag specifies where flip occurs. Default behavior is that flip occurs
+  # This flag specifies where flip occurs. Default behaviour is that flip occurs
   # before rendering new frame. This flag only has effect when `BGFX_CONFIG_MULTITHREADED=0`.
   #
   Reset_FlipAfterRender = 0x00004000
@@ -815,6 +815,7 @@ class Bgfx_caps_limits_t < FFI::Struct
     :maxUniforms, :uint32, # Maximum number of uniform handles.
     :maxOcclusionQueries, :uint32, # Maximum number of occlusion query handles.
     :maxEncoders, :uint32, # Maximum number of encoder threads.
+    :minResourceCbSize, :uint32, # Minimum resource command buffer size.
     :transientVbSize, :uint32, # Maximum transient vertex buffer size.
     :transientIbSize, :uint32 # Maximum transient index buffer size.
   )
@@ -910,6 +911,7 @@ end
 class Bgfx_init_limits_t < FFI::Struct
   layout(
     :maxEncoders, :uint16, # Maximum number of encoder threads.
+    :minResourceCbSize, :uint32, # Minimum resource command buffer size.
     :transientVbSize, :uint32, # Maximum transient vertex buffer size.
     :transientIbSize, :uint32 # Maximum transient index buffer size.
   )
@@ -1555,7 +1557,7 @@ module Bgfx
       :bgfx_vertex_pack => [:pointer, :bool, :Bgfx_attrib_t, :pointer, :pointer, :uint32],
       :bgfx_vertex_unpack => [:pointer, :Bgfx_attrib_t, :pointer, :pointer, :uint32],
       :bgfx_vertex_convert => [:pointer, :pointer, :pointer, :pointer, :uint32],
-      :bgfx_weld_vertices => [:pointer, :pointer, :pointer, :uint16, :float],
+      :bgfx_weld_vertices => [:pointer, :pointer, :pointer, :uint32, :bool, :float],
       :bgfx_topology_convert => [:Bgfx_topology_convert_t, :pointer, :uint32, :pointer, :uint32, :bool],
       :bgfx_topology_sort_tri_list => [:Bgfx_topology_sort_t, :pointer, :uint32, :pointer, :pointer, :pointer, :uint32, :pointer, :uint32, :bool],
       :bgfx_get_supported_renderers => [:uint8, :pointer],
@@ -1744,7 +1746,7 @@ module Bgfx
       :bgfx_vertex_pack => :void,
       :bgfx_vertex_unpack => :void,
       :bgfx_vertex_convert => :void,
-      :bgfx_weld_vertices => :uint16,
+      :bgfx_weld_vertices => :uint32,
       :bgfx_topology_convert => :uint32,
       :bgfx_topology_sort_tri_list => :void,
       :bgfx_get_supported_renderers => :uint8,
@@ -1979,10 +1981,11 @@ module Bgfx
   # _layout = Vertex stream layout.
   # _data = Vertex stream.
   # _num = Number of vertices in vertex stream.
+  # _index32 = Set to `true` if input indices are 32-bit.
   # _epsilon = Error tolerance for vertex position comparison.
   #
-  def self.weld_vertices(_output, _layout, _data, _num, _epsilon = 0.001)
-    return bgfx_weld_vertices(_output, _layout, _data, _num, _epsilon)
+  def self.weld_vertices(_output, _layout, _data, _num, _index32, _epsilon = 0.001)
+    return bgfx_weld_vertices(_output, _layout, _data, _num, _index32, _epsilon)
   end
 
   #
@@ -2079,7 +2082,7 @@ module Bgfx
   #   - `BGFX_RESET_CAPTURE` - Begin screen capture.
   #   - `BGFX_RESET_FLUSH_AFTER_RENDER` - Flush rendering after submitting to GPU.
   #   - `BGFX_RESET_FLIP_AFTER_RENDER` - This flag  specifies where flip
-  #     occurs. Default behavior is that flip occurs before rendering new
+  #     occurs. Default behaviour is that flip occurs before rendering new
   #     frame. This flag only has effect when `BGFX_CONFIG_MULTITHREADED=0`.
   #   - `BGFX_RESET_SRGB_BACKBUFFER` - Enable sRGB backbuffer.
   # _format = Texture format. See: `TextureFormat::Enum`.
