@@ -25,6 +25,8 @@
 
             $ make osx-debug64 CFLAGS='-DBGFX_CONFIG_MULTITHREADED=0 -DBGFX_CONFIG_RENDERER_METAL'
             $ make osx-releaes64 CFLAGS='-DBGFX_CONFIG_MULTITHREADED=0 -DBGFX_CONFIG_RENDERER_METAL'
+            > make mingw-gcc-debug64 CFLAGS='-DBGFX_CONFIG_MULTITHREADED=0 -DBGFX_CONFIG_RENDERER_OPENGL'
+            > make mingw-gcc-release64 CFLAGS='-DBGFX_CONFIG_MULTITHREADED=0 -DBGFX_CONFIG_RENDERER_OPENGL'
 
 *   imgui.rb, imgui_impl_bgfx.rb and imgui_impl_sdl2.rb
     *   Copied from Ruby-ImGui ( https://github.com/vaiorabbit/ruby-imgui )
