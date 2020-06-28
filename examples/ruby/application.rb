@@ -9,6 +9,7 @@ require_relative 'common/utils'
 require_relative 'common/sample'
 require_relative '00-helloworld/00_helloworld'
 require_relative '01-cubes/01_cubes'
+# require_relative '02-metaballs/02_metaballs'
 require_relative '03-raymarch/raymarch'
 require_relative '06-bump/06_bump'
 
@@ -75,6 +76,7 @@ class Application
     ImGui::ImplSDL2_Init(@window)
 
     @samples = [
+      # Sample02.new,
       Sample00.new,
       Sample01.new,
       Sample03.new,

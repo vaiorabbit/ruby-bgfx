@@ -22,9 +22,10 @@ module BgfxUtils
     file_path = runtime_path + shader_path + name + ".bin"
 
     shader_binary = IO.binread(file_path)
-    shader_mem = FFI::MemoryPointer.from_string(shader_binary)
-    handle = Bgfx::bgfx_create_shader(Bgfx::bgfx_make_ref(shader_mem, shader_mem.size))
-    Bgfx::bgfx_set_shader_name(handle, name, 0x7fffffff) # 0x7fffffff == INT32_MAX
+    mem = Bgfx_memory_t.new(Bgfx::alloc(shader_binary.size)) # will be freed inside bgfx.
+    mem[:data].write_string(shader_binary)
+    handle = Bgfx::create_shader(mem)
+    Bgfx::set_shader_name(handle, name)
 
     return handle
   end
@@ -32,7 +33,7 @@ module BgfxUtils
   def self.load_program(vs_name, fs_name, runtime_path = "../runtime/")
     vsh = load_shader(vs_name, runtime_path)
     fsh = fs_name != nil ? load_shader(fs_name, runtime_path) : Bgfx::Bgfx_Invalid_Handle
-    return Bgfx::bgfx_create_program(vsh, fsh, true)
+    return Bgfx::create_program(vsh, fsh, true)
   end
 
   ################################################################################
@@ -41,11 +42,9 @@ module BgfxUtils
     texture_raw = IO.binread(runtime_path + name)
     texture_mem = FFI::MemoryPointer.from_string(texture_raw)
 
-    return Bgfx::bgfx_create_texture(
-      Bgfx::bgfx_make_ref(texture_mem, texture_mem.size),
-      Bgfx::Texture_None|Bgfx::Sampler_None,
-      0,
-      nil
+    return Bgfx::create_texture(
+      Bgfx::make_ref(texture_mem, texture_mem.size),
+      Bgfx::Texture_None|Bgfx::Sampler_None
     )
   end
 
@@ -101,14 +100,14 @@ module BgfxUtils
       i1 = indices[1]
       i2 = indices[2]
 
-      Bgfx::bgfx_vertex_unpack(v0.m_x, Bgfx::Attrib::Position, _layout, _vertices, i0)
-      Bgfx::bgfx_vertex_unpack(v0.m_u, Bgfx::Attrib::TexCoord0, _layout, _vertices, i0)
+      Bgfx::vertex_unpack(v0.m_x, Bgfx::Attrib::Position, _layout, _vertices, i0)
+      Bgfx::vertex_unpack(v0.m_u, Bgfx::Attrib::TexCoord0, _layout, _vertices, i0)
 
-      Bgfx::bgfx_vertex_unpack(v1.m_x, Bgfx::Attrib::Position, _layout, _vertices, i1)
-      Bgfx::bgfx_vertex_unpack(v1.m_u, Bgfx::Attrib::TexCoord0, _layout, _vertices, i1)
+      Bgfx::vertex_unpack(v1.m_x, Bgfx::Attrib::Position, _layout, _vertices, i1)
+      Bgfx::vertex_unpack(v1.m_u, Bgfx::Attrib::TexCoord0, _layout, _vertices, i1)
 
-      Bgfx::bgfx_vertex_unpack(v2.m_x, Bgfx::Attrib::Position, _layout, _vertices, i2)
-      Bgfx::bgfx_vertex_unpack(v2.m_u, Bgfx::Attrib::TexCoord0, _layout, _vertices, i2)
+      Bgfx::vertex_unpack(v2.m_x, Bgfx::Attrib::Position, _layout, _vertices, i2)
+      Bgfx::vertex_unpack(v2.m_u, Bgfx::Attrib::TexCoord0, _layout, _vertices, i2)
 
       bax = v1.m_x.read_float - v0.m_x.read_float
       bay = v1.m_y.read_float - v0.m_y.read_float
@@ -151,7 +150,7 @@ module BgfxUtils
       tanu = tangents[ii + 0]
       tanv = tangents[ii + 1]
 
-      Bgfx::bgfx_vertex_unpack(nxyzw, Bgfx::Attrib::Normal, _layout, _vertices, ii)
+      Bgfx::vertex_unpack(nxyzw, Bgfx::Attrib::Normal, _layout, _vertices, ii)
 
       normal = RVec3.new(*nxyzw.read_array_of_float(3))
       ndt    = RVec3.dot(normal, tanu)
@@ -159,7 +158,7 @@ module BgfxUtils
       tmp    = (tanu - (ndt * normal)).normalize!
 
       tangent.write_array_of_float([*tmp.to_a, RVec3.dot(nxt, tanv) < 0 ? -1.0 : 1.0])
-      Bgfx::bgfx_vertex_pack(tangent, true, Bgfx::Attrib::Tangent, _layout, _vertices, ii)
+      Bgfx::vertex_pack(tangent, true, Bgfx::Attrib::Tangent, _layout, _vertices, ii)
     end
   end
 

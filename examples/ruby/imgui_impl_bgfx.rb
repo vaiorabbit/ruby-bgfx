@@ -49,7 +49,7 @@ module ImGui
     bgfx_caps = Bgfx_caps_t.new(Bgfx::get_caps())
     @@ndc_homogeneous = bgfx_caps[:homogeneousDepth]
 
-    @@m_program = BgfxUtils.load_program("vs_ocornut_imgui", "fs_ocornut_imgui", "./")
+    @@m_program = BgfxUtils.load_program("vs_ocornut_imgui", "fs_ocornut_imgui", "#{__dir__}/")
     @@u_imageLodEnabled  = Bgfx::create_uniform("u_imageLodEnabled",  Bgfx::UniformType::Vec4, -1)
     @@m_imageProgram = BgfxUtils.load_program("vs_imgui_image", "fs_imgui_image", "./")
 

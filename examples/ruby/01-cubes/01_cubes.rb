@@ -182,7 +182,8 @@ class Sample01 < Sample
     @m_ibh[3] = Bgfx::create_index_buffer(Bgfx::make_ref(@@s_cubeLineStrip, @@s_cubeLineStrip.size))
     @m_ibh[4] = Bgfx::create_index_buffer(Bgfx::make_ref(@@s_cubePoints, @@s_cubePoints.size))
 
-    @m_program = BgfxUtils.load_program("vs_cubes", "fs_cubes")
+    # @m_program = BgfxUtils.load_program("vs_cubes", "fs_cubes")
+    @m_program = BgfxUtils.load_program("vs_cubes", "fs_cubes", "#{__dir__}/../")
 
     @eye.setElements(0.0, 0.0, -35.0)
     @at.setElements(0.0, 0.0, 0.0)
