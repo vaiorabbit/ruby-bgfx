@@ -8,7 +8,7 @@ require_relative '../common/sample'
 
 class Sample02 < Sample
 
-  DIMS = 32 # 16
+  DIMS = 32
   YPitch = DIMS
   ZPitch = DIMS * DIMS
   Invdim = 1.0 / (DIMS - 1).to_f
@@ -31,7 +31,7 @@ class Sample02 < Sample
         @@ms_layout = Bgfx_vertex_layout_t.new
         @@ms_layout.begin()
         @@ms_layout.add(Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float)
-        @@ms_layout.add(Bgfx::Attrib::Normal, 4, Bgfx::AttribType::Float)
+        @@ms_layout.add(Bgfx::Attrib::Normal, 3, Bgfx::AttribType::Float)
         @@ms_layout.add(Bgfx::Attrib::Color0, 4, Bgfx::AttribType::Uint8, true)
         @@ms_layout.end
       end
@@ -377,7 +377,6 @@ class Sample02 < Sample
       _result[0] = edge1[0]
       _result[1] = edge1[1]
       _result[2] = edge1[2]
-      pp "HI"
       return 1.0
     end
 
@@ -385,12 +384,10 @@ class Sample02 < Sample
       _result[0] = edge0[0]
       _result[1] = edge0[1]
       _result[2] = edge0[2]
-      pp "HO, #{(_iso - _v0).abs}, #{(_v0 - _v1).abs}"
       return 0.0
     end
 
     lerp = (_iso - _v0) / (_v1 - _v0)
-    pp lerp
     _result[0] = edge0[0] + lerp * (edge1[0] - edge0[0])
     _result[1] = edge0[1] + lerp * (edge1[1] - edge0[1])
     _result[2] = edge0[2] + lerp * (edge1[2] - edge0[2])
@@ -418,12 +415,11 @@ class Sample02 < Sample
 
     indices1 = [1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7]
     12.times do |ii|
-      if flags & (1 << ii)
+      if (flags & (1 << ii)) != 0
         idx0 = ii & 7
         idx1 = indices1.at(ii) # "\x1\x2\x3\x0\x5\x6\x7\x4\x4\x5\x6\x7"[ii];
         vertex = verts[ii]
         lerp = vertLerp(vertex, _iso, idx0, _val[idx0][:m_val], idx1, _val[idx1][:m_val])
-        #pp lerp
         na = _val[idx0][:m_normal]
         nb = _val[idx1][:m_normal]
 
@@ -443,14 +439,13 @@ class Sample02 < Sample
 
     while indices[ii] != -1
 
-      result = PosNormalColorVertex.new(_result.pointer + PosNormalColorVertex.size * ii)
+      result = PosNormalColorVertex.new(_result.pointer + _stride * ii)
 
       vertex = verts[indices[ii]]
 
       result[:m_pos][0] = _xyz[0] + vertex[0]
       result[:m_pos][1] = _xyz[1] + vertex[1]
       result[:m_pos][2] = _xyz[2] + vertex[2]
-      # result.pointer.write_array_of_float([_xyz[0] + vertex[0], _xyz[1] + vertex[1], _xyz[2] + vertex[2]])
 
       result[:m_normal][0] = vertex[3]
       result[:m_normal][1] = vertex[4]
@@ -559,22 +554,23 @@ class Sample02 < Sample
 
     numSpheres = 16
     sphere = Array.new(numSpheres) { RVec4.new }
+
     numSpheres.times do |ii|
+=begin
       sphere[ii].setElements(
         Math.sin(0.0*(ii*0.21)+ii*0.37) * (DIMS * 0.5 - 8.0),
         Math.sin(0.0*(ii*0.37)+ii*0.67) * (DIMS * 0.5 - 8.0),
         Math.cos(0.0*(ii*0.11)+ii*0.13) * (DIMS * 0.5 - 8.0),
         1.0/(2.0 + (Math.sin(0.0*(ii*0.13) )*0.5+0.5)*2.0)
       )
-      pp sphere[ii]
-=begin
+=end
       sphere[ii].setElements(
         Math.sin(@time*(ii*0.21)+ii*0.37) * (DIMS * 0.5 - 8.0),
         Math.sin(@time*(ii*0.37)+ii*0.67) * (DIMS * 0.5 - 8.0),
         Math.cos(@time*(ii*0.11)+ii*0.13) * (DIMS * 0.5 - 8.0),
         1.0/(2.0 + (Math.sin(@time*(ii*0.13) )*0.5+0.5)*2.0)
       )
-=end
+
     end
 
     DIMS.times do |zz|
@@ -620,8 +616,6 @@ class Sample02 < Sample
       end
     end
 
-    # tvb[:data].write_string(draw_list[:VtxBuffer][:Data].read_bytes(num_vertices * ImDrawVert.size))
-
     rgb = Array.new(6) { 0.0 }
     (DIMS - 1).times do |zz|
       break if numVertices + 12 >= maxVertices
@@ -654,12 +648,9 @@ class Sample02 < Sample
       end
     end
 
-    # numVertices.times do |i|
-    #   vertex = PosNormalColorVertex.new(tvb[:data] + PosNormalColorVertex.size * i)
-    #   puts "#{vertex[:m_pos][0]}, #{vertex[:m_pos][1]}, #{vertex[:m_pos][2]}"
-    # end
+    # mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.setIdentity.to_a)
+    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.rotationY(@time) * RMtx4.new.rotationX(0.67 * @time)).to_a)
 
-    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.setIdentity.to_a)
     Bgfx::set_transform(mtx, 1)
     Bgfx::set_transient_vertex_buffer(0, tvb, 0, numVertices)
     Bgfx::set_state(Bgfx::State_Default)
