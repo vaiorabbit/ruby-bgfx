@@ -1,7 +1,6 @@
 #
 # Ref.: bgfx/examples/02-metaballs/metaballs.cpp
 #
-
 require_relative '../common/sample'
 
 ################################################################################
@@ -398,6 +397,7 @@ class Sample02 < Sample
   # _result : PosNormalColorVertex.new(tvb[:data] + PosNormalColorVertex.size * numVertices)
   # _rgb : float[6]
   # _val : [Grid[0], Grid[1], ...]
+  @@indices1 = [1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7]
   def self.triangulate(_result, _stride, _rgb, _xyz, _val, _iso)
     cubeindex = 0
     cubeindex |= (_val[0][:m_val] < _iso) ? 0x01 : 0
@@ -413,11 +413,10 @@ class Sample02 < Sample
     verts = Array.new(12) { Array.new(6) }
     flags = @@s_edges_src[cubeindex]
 
-    indices1 = [1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7]
     12.times do |ii|
       if (flags & (1 << ii)) != 0
         idx0 = ii & 7
-        idx1 = indices1.at(ii) # "\x1\x2\x3\x0\x5\x6\x7\x4\x4\x5\x6\x7"[ii];
+        idx1 = @@indices1.at(ii) # "\x1\x2\x3\x0\x5\x6\x7\x4\x4\x5\x6\x7"[ii];
         vertex = verts[ii]
         lerp = vertLerp(vertex, _iso, idx0, _val[idx0][:m_val], idx1, _val[idx1][:m_val])
         na = _val[idx0][:m_normal]
@@ -439,7 +438,7 @@ class Sample02 < Sample
 
     while indices[ii] != -1
 
-      result = PosNormalColorVertex.new(_result.pointer + _stride * ii)
+      result = PosNormalColorVertex.new(_result + _stride * ii)
 
       vertex = verts[indices[ii]]
 
@@ -503,7 +502,7 @@ class Sample02 < Sample
 
     @m_grid = Array.new(DIMS * DIMS * DIMS) { Grid.new }
 
-    @eye.setElements(0.0, 0.0, -50.0)
+    @eye.setElements(0.0, 0.0, 50.0)
     @at.setElements(0.0, 0.0, 0.0)
     @up.setElements(0.0,  1.0,  0.0)
     @mtx_view.lookAtRH( @eye, @at, @up )
@@ -556,21 +555,21 @@ class Sample02 < Sample
     sphere = Array.new(numSpheres) { RVec4.new }
 
     numSpheres.times do |ii|
-=begin
+
       sphere[ii].setElements(
         Math.sin(0.0*(ii*0.21)+ii*0.37) * (DIMS * 0.5 - 8.0),
         Math.sin(0.0*(ii*0.37)+ii*0.67) * (DIMS * 0.5 - 8.0),
         Math.cos(0.0*(ii*0.11)+ii*0.13) * (DIMS * 0.5 - 8.0),
         1.0/(2.0 + (Math.sin(0.0*(ii*0.13) )*0.5+0.5)*2.0)
       )
-=end
+=begin
       sphere[ii].setElements(
         Math.sin(@time*(ii*0.21)+ii*0.37) * (DIMS * 0.5 - 8.0),
         Math.sin(@time*(ii*0.37)+ii*0.67) * (DIMS * 0.5 - 8.0),
         Math.cos(@time*(ii*0.11)+ii*0.13) * (DIMS * 0.5 - 8.0),
         1.0/(2.0 + (Math.sin(@time*(ii*0.13) )*0.5+0.5)*2.0)
       )
-
+=end
     end
 
     DIMS.times do |zz|
@@ -579,12 +578,11 @@ class Sample02 < Sample
         DIMS.times do |xx|
           xoffset = offset + xx
           dist, prod = 0.0, 1.0
-          numSpheres.times do |ii|
-            pos = sphere[ii]
-            dx = pos[0] - (-DIMS*0.5 + xx.to_f)
-            dy = pos[1] - (-DIMS*0.5 + yy.to_f)
-            dz = pos[2] - (-DIMS*0.5 + zz.to_f)
-            invr = pos[3]
+          sphere.each do |s|
+            dx = s[0] - (-DIMS*0.5 + xx)
+            dy = s[1] - (-DIMS*0.5 + yy)
+            dz = s[2] - (-DIMS*0.5 + zz)
+            invr = s[3]
             dot = dx*dx + dy*dy + dz*dz
             dot *= invr*invr
 
@@ -641,15 +639,15 @@ class Sample02 < Sample
             @m_grid[xoffset+1              ],
             @m_grid[xoffset                ],
           ]
-          vertex = PosNormalColorVertex.new(tvb[:data] + PosNormalColorVertex.size * numVertices)
+          vertex = (tvb[:data] + PosNormalColorVertex.size * numVertices)
           num = Sample02::triangulate(vertex, PosNormalColorVertex::ms_layout[:stride], rgb, pos, val, 0.5)
           numVertices += num
         end
       end
     end
 
-    # mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.setIdentity.to_a)
-    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.rotationY(@time) * RMtx4.new.rotationX(0.67 * @time)).to_a)
+    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.setIdentity.to_a)
+    #mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.rotationY(@time) * RMtx4.new.rotationX(0.67 * @time)).to_a)
 
     Bgfx::set_transform(mtx, 1)
     Bgfx::set_transient_vertex_buffer(0, tvb, 0, numVertices)

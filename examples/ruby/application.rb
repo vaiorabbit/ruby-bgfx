@@ -1,3 +1,4 @@
+# require 'ruby-prof'
 require 'rmath3d/rmath3d'
 require 'sdl2'
 require_relative '../../bindings/ruby/bgfx'
@@ -9,7 +10,7 @@ require_relative 'common/utils'
 require_relative 'common/sample'
 require_relative '00-helloworld/00_helloworld'
 require_relative '01-cubes/01_cubes'
-# require_relative '02-metaballs/02_metaballs'
+require_relative '02-metaballs/02_metaballs'
 require_relative '03-raymarch/raymarch'
 require_relative '06-bump/06_bump'
 
@@ -18,6 +19,8 @@ include RMath3D
 SDL2.load_lib(SampleUtils.sdl2_dll_path())
 Bgfx.load_lib(SampleUtils.bgfx_dll_path("Debug"))
 ImGui.load_lib(SampleUtils.imgui_dll_path())
+
+# RubyProf::measure_mode = RubyProf::WALL_TIME
 
 class Application
 
@@ -76,7 +79,7 @@ class Application
     ImGui::ImplSDL2_Init(@window)
 
     @samples = [
-      # Sample02.new,
+      Sample02.new,
       Sample00.new,
       Sample01.new,
       Sample03.new,
@@ -187,6 +190,7 @@ end
 
 if __FILE__ == $PROGRAM_NAME
   begin
+    # RubyProf.start
     app = Application.new
     setup_success = app.setup(1280, 720)
     exit if not setup_success
@@ -195,5 +199,8 @@ if __FILE__ == $PROGRAM_NAME
     pp e
   ensure
     app.teardown
+    result = RubyProf.stop
+    # printer = RubyProf::FlatPrinter.new(result)
+    # printer.print(STDOUT)
   end
 end
