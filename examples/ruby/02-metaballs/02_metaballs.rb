@@ -1,13 +1,17 @@
 #
 # Ref.: bgfx/examples/02-metaballs/metaballs.cpp
 #
+
 require_relative '../common/sample'
 
 ################################################################################
 
 class Sample02 < Sample
 
-  DIMS = 32
+  DIMS = 16
+  DIMS_MAX = 32
+  DIMS_MIN = 8
+  DIM_SCALE = DIMS / 32.0
   YPitch = DIMS
   ZPitch = DIMS * DIMS
   Invdim = 1.0 / (DIMS - 1).to_f
@@ -37,11 +41,12 @@ class Sample02 < Sample
     end
   end
 
-  class Grid < FFI::Struct
-    layout(
-      :m_val, :float,
-      :m_normal, [:float, 3],
-    )
+  class Grid
+    attr_accessor :m_val, :m_normal
+    def initialize
+      @m_val = 0.0
+      @m_normal = [0.0, 0.0, 0.0]
+    end
   end
 
   # Reference(s):
@@ -82,8 +87,6 @@ class Sample02 < Sample
     0xf00, 0xe09, 0xd03, 0xc0a, 0xb06, 0xa0f, 0x905, 0x80c,
     0x70c, 0x605, 0x50f, 0x406, 0x30a, 0x203, 0x109, 0x000,
   ]
-
-  # @@s_edges = FFI::MemoryPointer.new(:uint16, @@s_edges_src.length).write_array_of_ushort(@@s_edges_src)
 
   @@s_indices_src = [ # static const int8_t s_indices[256][16]
     [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
@@ -344,13 +347,7 @@ class Sample02 < Sample
     [  -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 ],
   ]
 
-  # Ref.: https://stackoverflow.com/questions/56100211/ruby-ffi-to-call-c-function-with-array-of-arrays
-  # @@s_indices = FFI::MemoryPointer.new(:int8, @@s_indices_src.length * @@s_indices_src[0].length)
-  # @@s_indices_src.each_with_index do |ary, i|
-  #   @@s_indices.put_array_of_int8(@@s_indices_src[0].length * i, ary)
-  # end
-
-  @@s_cube = [ # @@s_cube_src = [
+  @@s_cube = [
     [ 0.0, 1.0, 1.0 ], # 0
     [ 1.0, 1.0, 1.0 ], # 1
     [ 1.0, 1.0, 0.0 ], # 2
@@ -361,14 +358,9 @@ class Sample02 < Sample
     [ 0.0, 0.0, 0.0 ], # 7
   ]
 
-  # @@s_cube = FFI::MemoryPointer.new(:float, @@s_cube_src.length * @@s_cube_src[0].length)
-  # @@s_cube_src.each_with_index do |ary, i|
-  #   @@s_cube.put_array_of_float(@@s_cube_src[0].length * i, ary)
-  # end
-
   ################################################################################
 
-  def self.vertLerp(_result, _iso, _idx0, _v0, _idx1, _v1) # float vertLerp(float* _result, float _iso, uint32_t _idx0, float _v0, uint32_t _idx1, float _v1)
+  def self.vertLerp(_result, _iso, _idx0, _v0, _idx1, _v1)
     edge0 = @@s_cube[_idx0]
     edge1 = @@s_cube[_idx1]
 
@@ -394,33 +386,30 @@ class Sample02 < Sample
     return lerp
   end
 
-  # _result : PosNormalColorVertex.new(tvb[:data] + PosNormalColorVertex.size * numVertices)
-  # _rgb : float[6]
-  # _val : [Grid[0], Grid[1], ...]
-  @@indices1 = [1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7]
   def self.triangulate(_result, _stride, _rgb, _xyz, _val, _iso)
     cubeindex = 0
-    cubeindex |= (_val[0][:m_val] < _iso) ? 0x01 : 0
-    cubeindex |= (_val[1][:m_val] < _iso) ? 0x02 : 0
-    cubeindex |= (_val[2][:m_val] < _iso) ? 0x04 : 0
-    cubeindex |= (_val[3][:m_val] < _iso) ? 0x08 : 0
-    cubeindex |= (_val[4][:m_val] < _iso) ? 0x10 : 0
-    cubeindex |= (_val[5][:m_val] < _iso) ? 0x20 : 0
-    cubeindex |= (_val[6][:m_val] < _iso) ? 0x40 : 0
-    cubeindex |= (_val[7][:m_val] < _iso) ? 0x80 : 0
+    cubeindex |= (_val[0].m_val < _iso) ? 0x01 : 0
+    cubeindex |= (_val[1].m_val < _iso) ? 0x02 : 0
+    cubeindex |= (_val[2].m_val < _iso) ? 0x04 : 0
+    cubeindex |= (_val[3].m_val < _iso) ? 0x08 : 0
+    cubeindex |= (_val[4].m_val < _iso) ? 0x10 : 0
+    cubeindex |= (_val[5].m_val < _iso) ? 0x20 : 0
+    cubeindex |= (_val[6].m_val < _iso) ? 0x40 : 0
+    cubeindex |= (_val[7].m_val < _iso) ? 0x80 : 0
     return 0 if @@s_edges_src[cubeindex] == 0
 
     verts = Array.new(12) { Array.new(6) }
     flags = @@s_edges_src[cubeindex]
 
+    indices1 = [1, 2, 3, 0, 5, 6, 7, 4, 4, 5, 6, 7]
     12.times do |ii|
       if (flags & (1 << ii)) != 0
         idx0 = ii & 7
-        idx1 = @@indices1.at(ii) # "\x1\x2\x3\x0\x5\x6\x7\x4\x4\x5\x6\x7"[ii];
+        idx1 = indices1.at(ii) # "\x1\x2\x3\x0\x5\x6\x7\x4\x4\x5\x6\x7"[ii];
         vertex = verts[ii]
-        lerp = vertLerp(vertex, _iso, idx0, _val[idx0][:m_val], idx1, _val[idx1][:m_val])
-        na = _val[idx0][:m_normal]
-        nb = _val[idx1][:m_normal]
+        lerp = vertLerp(vertex, _iso, idx0, _val[idx0].m_val, idx1, _val[idx1].m_val)
+        na = _val[idx0].m_normal
+        nb = _val[idx1].m_normal
 
         vertex[3] = na[0] + lerp * (nb[0] - na[0])
         vertex[4] = na[1] + lerp * (nb[1] - na[1])
@@ -502,7 +491,7 @@ class Sample02 < Sample
 
     @m_grid = Array.new(DIMS * DIMS * DIMS) { Grid.new }
 
-    @eye.setElements(0.0, 0.0, 50.0)
+    @eye.setElements(0.0, 0.0, -50.0 * DIM_SCALE)
     @at.setElements(0.0, 0.0, 0.0)
     @up.setElements(0.0,  1.0,  0.0)
     @mtx_view.lookAtRH( @eye, @at, @up )
@@ -554,22 +543,14 @@ class Sample02 < Sample
     numSpheres = 16
     sphere = Array.new(numSpheres) { RVec4.new }
 
+    coord_scale = 1.0 - ((DIMS_MAX - DIMS).to_f / (DIMS_MAX - DIMS_MIN)) * (1.0 - 0.9)
     numSpheres.times do |ii|
-
       sphere[ii].setElements(
-        Math.sin(0.0*(ii*0.21)+ii*0.37) * (DIMS * 0.5 - 8.0),
-        Math.sin(0.0*(ii*0.37)+ii*0.67) * (DIMS * 0.5 - 8.0),
-        Math.cos(0.0*(ii*0.11)+ii*0.13) * (DIMS * 0.5 - 8.0),
-        1.0/(2.0 + (Math.sin(0.0*(ii*0.13) )*0.5+0.5)*2.0)
+        coord_scale * Math.sin(@time*(ii*0.21)+ii*0.37) * (DIMS * 0.5 - 8.0 * DIM_SCALE),
+        coord_scale * Math.sin(@time*(ii*0.37)+ii*0.67) * (DIMS * 0.5 - 8.0 * DIM_SCALE),
+        coord_scale * Math.cos(@time*(ii*0.11)+ii*0.13) * (DIMS * 0.5 - 8.0 * DIM_SCALE),
+        1.0/(DIM_SCALE * (2.0 + (Math.sin(@time*(ii*0.13))*0.5+0.5)*2.0)) # 1.0/(2.0 + (Math.sin(@time*(ii*0.13) )*0.5+0.5)*2.0)
       )
-=begin
-      sphere[ii].setElements(
-        Math.sin(@time*(ii*0.21)+ii*0.37) * (DIMS * 0.5 - 8.0),
-        Math.sin(@time*(ii*0.37)+ii*0.67) * (DIMS * 0.5 - 8.0),
-        Math.cos(@time*(ii*0.11)+ii*0.13) * (DIMS * 0.5 - 8.0),
-        1.0/(2.0 + (Math.sin(@time*(ii*0.13) )*0.5+0.5)*2.0)
-      )
-=end
     end
 
     DIMS.times do |zz|
@@ -578,11 +559,12 @@ class Sample02 < Sample
         DIMS.times do |xx|
           xoffset = offset + xx
           dist, prod = 0.0, 1.0
-          sphere.each do |s|
-            dx = s[0] - (-DIMS*0.5 + xx)
-            dy = s[1] - (-DIMS*0.5 + yy)
-            dz = s[2] - (-DIMS*0.5 + zz)
-            invr = s[3]
+          numSpheres.times do |ii|
+            pos = sphere[ii]
+            dx = pos[0] - (-DIMS*0.5 + xx.to_f)
+            dy = pos[1] - (-DIMS*0.5 + yy.to_f)
+            dz = pos[2] - (-DIMS*0.5 + zz.to_f)
+            invr = pos[3]
             dot = dx*dx + dy*dy + dz*dz
             dot *= invr*invr
 
@@ -590,7 +572,7 @@ class Sample02 < Sample
             dist += prod
             prod *= dot
           end
-          @m_grid[xoffset][:m_val] = dist / prod - 1.0
+          @m_grid[xoffset].m_val = prod.abs >= 0.00001 ? dist / prod - 1.0 : -1.0
         end
       end
     end
@@ -602,14 +584,14 @@ class Sample02 < Sample
         (1...(DIMS-1)).each do |xx|
           xoffset = offset + xx
           normal.setElements(
-            @m_grid[xoffset-1     ][:m_val] - @m_grid[xoffset+1     ][:m_val],
-            @m_grid[xoffset-YPitch][:m_val] - @m_grid[xoffset+YPitch][:m_val],
-            @m_grid[xoffset-ZPitch][:m_val] - @m_grid[xoffset+ZPitch][:m_val]
+            @m_grid[xoffset-1     ].m_val - @m_grid[xoffset+1     ].m_val,
+            @m_grid[xoffset-YPitch].m_val - @m_grid[xoffset+YPitch].m_val,
+            @m_grid[xoffset-ZPitch].m_val - @m_grid[xoffset+ZPitch].m_val
           )
           normal.normalize!
-          @m_grid[xoffset][:m_normal][0] = normal[0]
-          @m_grid[xoffset][:m_normal][1] = normal[1]
-          @m_grid[xoffset][:m_normal][2] = normal[2]
+          @m_grid[xoffset].m_normal[0] = normal[0]
+          @m_grid[xoffset].m_normal[1] = normal[1]
+          @m_grid[xoffset].m_normal[2] = normal[2]
         end
       end
     end
@@ -646,12 +628,11 @@ class Sample02 < Sample
       end
     end
 
-    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.setIdentity.to_a)
-    #mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.rotationY(@time) * RMtx4.new.rotationX(0.67 * @time)).to_a)
+    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.rotationY(@time) * RMtx4.new.rotationX(0.67 * @time)).to_a)
 
     Bgfx::set_transform(mtx, 1)
     Bgfx::set_transient_vertex_buffer(0, tvb, 0, numVertices)
-    Bgfx::set_state(Bgfx::State_Default)
+    Bgfx::set_state(Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa)
     Bgfx::submit(0, @m_program)
     Bgfx::frame()
 
