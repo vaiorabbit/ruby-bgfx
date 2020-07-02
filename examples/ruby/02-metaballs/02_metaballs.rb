@@ -461,6 +461,8 @@ class Sample02 < Sample
     @m_program = nil
 
     @m_grid = nil
+
+    @last = 0
   end
 
   def setup(width, height, debug, reset)
@@ -490,6 +492,8 @@ class Sample02 < Sample
     @m_program = BgfxUtils.load_program("vs_metaballs", "fs_metaballs", "#{__dir__}/../")
 
     @m_grid = Array.new(DIMS * DIMS * DIMS) { Grid.new }
+
+    @last = SampleUtils.get_performance_counter()
 
     @eye.setElements(0.0, 0.0, -50.0 * DIM_SCALE)
     @at.setElements(0.0, 0.0, 0.0)
@@ -527,14 +531,21 @@ class Sample02 < Sample
 
     ImGui::NewFrame()
     SampleDialog::show(self)
-    ImGui::Render()
-    ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 
     Bgfx::set_view_transform(0, @view, @proj)
     Bgfx::set_view_rect(0, 0, 0, @window_width, @window_height)
     Bgfx::touch(0)
 
+    now = SampleUtils.get_performance_counter()
+    frameTime = now - @last
+    @last = now
+    freq = SampleUtils.get_performance_frequency().to_f
+    toMs = 1000.0/freq
+
     numVertices = 0
+    profUpdate = 0
+    profNormal = 0
+    profTriangulate = 0
 
     maxVertices = 32 << 10
     tvb = Bgfx_transient_vertex_buffer_t.new
@@ -552,6 +563,8 @@ class Sample02 < Sample
         1.0/(DIM_SCALE * (2.0 + (Math.sin(@time*(ii*0.13))*0.5+0.5)*2.0)) # 1.0/(2.0 + (Math.sin(@time*(ii*0.13) )*0.5+0.5)*2.0)
       )
     end
+
+    profUpdate = SampleUtils.get_performance_counter()
 
     DIMS.times do |zz|
       DIMS.times do |yy|
@@ -577,6 +590,10 @@ class Sample02 < Sample
       end
     end
 
+    profUpdate = SampleUtils.get_performance_counter() - profUpdate
+
+    profNormal = SampleUtils.get_performance_counter()
+
     normal = RVec3.new
     (1...(DIMS-1)).each do |zz|
       (1...(DIMS-1)).each do |yy|
@@ -595,6 +612,10 @@ class Sample02 < Sample
         end
       end
     end
+
+    profNormal = SampleUtils.get_performance_counter() - profNormal
+
+    profTriangulate = SampleUtils.get_performance_counter()
 
     rgb = Array.new(6) { 0.0 }
     (DIMS - 1).times do |zz|
@@ -628,12 +649,30 @@ class Sample02 < Sample
       end
     end
 
+    profTriangulate = SampleUtils.get_performance_counter() - profTriangulate
+
     mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.rotationY(@time) * RMtx4.new.rotationX(0.67 * @time)).to_a)
 
     Bgfx::set_transform(mtx, 1)
     Bgfx::set_transient_vertex_buffer(0, tvb, 0, numVertices)
     Bgfx::set_state(Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa)
     Bgfx::submit(0, @m_program)
+
+    ImGui::SetNextWindowPos(ImVec2.create(@window_width - @window_width / 5.0 - 10.0, 10.0), ImGuiCond_FirstUseEver)
+    ImGui::SetNextWindowSize(ImVec2.create(@window_width / 5.0, @window_height / 4.0), ImGuiCond_FirstUseEver)
+    ImGui::Begin("Stats", nil, 0)
+
+    ImGui::Text("Num vertices:"); ImGui::SameLine(100); ImGui::Text("%5d (%6.4f%%)", :int, numVertices, :double, numVertices.to_f/maxVertices * 100)
+    ImGui::Text("Update:");       ImGui::SameLine(100); ImGui::Text("% 7.3f[ms]", :double, profUpdate*toMs)
+    ImGui::Text("Calc normals:"); ImGui::SameLine(100); ImGui::Text("% 7.3f[ms]", :double, profNormal*toMs)
+    ImGui::Text("Triangulate:");  ImGui::SameLine(100); ImGui::Text("% 7.3f[ms]", :double, profTriangulate*toMs)
+    ImGui::Text("Frame:");        ImGui::SameLine(100); ImGui::Text("% 7.3f[ms]", :double, frameTime*toMs)
+
+    ImGui::End()
+
+    ImGui::Render()
+    ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
+
     Bgfx::frame()
 
   end

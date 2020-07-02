@@ -257,4 +257,14 @@ module SampleUtils
     return nwh
   end
 
+  ################################################################################
+
+  def self.get_performance_frequency
+    SDL2::SDL_GetPerformanceFrequency()
+  end
+
+  def self.get_performance_counter
+    SDL2::SDL_GetPerformanceCounter()
+  end
+
 end
