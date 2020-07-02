@@ -213,7 +213,12 @@ class SampleDialog
     ImGui::SetNextWindowPos(ImVec2.create(10.0, 50.0), ImGuiCond_FirstUseEver)
     ImGui::SetNextWindowSize(ImVec2.create(300.0, 230.0), ImGuiCond_FirstUseEver)
     ImGui::Begin(sample.name)
-    ImGui::TextWrapped("%s", :string, sample.desc)
+    desc_truncate_length = 25
+    truncate = sample.desc.length > desc_truncate_length
+    ImGui::Text("%s", :string, truncate ? "#{sample.desc[0...desc_truncate_length]}..." : sample.desc)
+    if truncate && ImGui::IsItemHovered()
+      ImGui::SetTooltip("%s", :string, sample.desc)
+    end
 
     # Jump to documentation
     ImGui::SameLine()

@@ -1,3 +1,4 @@
+# coding: utf-8
 #
 # Ref.: bgfx/examples/02-metaballs/metaballs.cpp
 #
@@ -8,13 +9,8 @@ require_relative '../common/sample'
 
 class Sample02 < Sample
 
-  DIMS = 16
-  DIMS_MAX = 32
   DIMS_MIN = 8
-  DIM_SCALE = DIMS / 32.0
-  YPitch = DIMS
-  ZPitch = DIMS * DIMS
-  Invdim = 1.0 / (DIMS - 1).to_f
+  DIMS_MAX = 32
 
   class PosNormalColorVertex < FFI::Struct
     @@ms_layout = nil
@@ -461,8 +457,32 @@ class Sample02 < Sample
     @m_program = nil
 
     @m_grid = nil
-
     @last = 0
+
+    @dims = 0
+    @dim_scale = 0.0
+    @y_pitch = 0
+    @z_pitch = 0
+    @inv_dim = 0.0
+  end
+
+  def reset_dimension(dim = 16)
+    return if dim < DIMS_MIN || dim > DIMS_MAX
+    return if @dims == dim
+    @dims = dim
+
+    @dim_scale = @dims / DIMS_MAX.to_f
+    @y_pitch = @dims
+    @z_pitch = @dims * @dims
+    @inv_dim = 1.0 / (@dims - 1).to_f
+
+    @m_grid = Array.new(@dims * @dims * @dims) { Grid.new }
+
+    @eye.setElements(0.0, 0.0, -50.0 * @dim_scale)
+    @at.setElements(0.0, 0.0, 0.0)
+    @up.setElements(0.0,  1.0,  0.0)
+    @mtx_view.lookAtRH( @eye, @at, @up )
+    @view.write_array_of_float(@mtx_view.to_a)
   end
 
   def setup(width, height, debug, reset)
@@ -491,11 +511,11 @@ class Sample02 < Sample
 
     @m_program = BgfxUtils.load_program("vs_metaballs", "fs_metaballs", "#{__dir__}/../")
 
-    @m_grid = Array.new(DIMS * DIMS * DIMS) { Grid.new }
-
     @last = SampleUtils.get_performance_counter()
 
-    @eye.setElements(0.0, 0.0, -50.0 * DIM_SCALE)
+    reset_dimension(16)
+
+    @eye.setElements(0.0, 0.0, -50.0 * @dim_scale)
     @at.setElements(0.0, 0.0, 0.0)
     @up.setElements(0.0,  1.0,  0.0)
     @mtx_view.lookAtRH( @eye, @at, @up )
@@ -508,7 +528,10 @@ class Sample02 < Sample
   def teardown()
     ImGui::ImplBgfx_Shutdown()
 
+    @dims = 0
+
     @m_grid = nil
+    @last = 0
 
     Bgfx::destroy_program(@m_program) if @m_program
 
@@ -554,29 +577,29 @@ class Sample02 < Sample
     numSpheres = 16
     sphere = Array.new(numSpheres) { RVec4.new }
 
-    coord_scale = 1.0 - ((DIMS_MAX - DIMS).to_f / (DIMS_MAX - DIMS_MIN)) * (1.0 - 0.9)
+    coord_scale = 1.0 - ((DIMS_MAX - @dims).to_f / (DIMS_MAX - DIMS_MIN)) * (1.0 - 0.9)
     numSpheres.times do |ii|
       sphere[ii].setElements(
-        coord_scale * Math.sin(@time*(ii*0.21)+ii*0.37) * (DIMS * 0.5 - 8.0 * DIM_SCALE),
-        coord_scale * Math.sin(@time*(ii*0.37)+ii*0.67) * (DIMS * 0.5 - 8.0 * DIM_SCALE),
-        coord_scale * Math.cos(@time*(ii*0.11)+ii*0.13) * (DIMS * 0.5 - 8.0 * DIM_SCALE),
-        1.0/(DIM_SCALE * (2.0 + (Math.sin(@time*(ii*0.13))*0.5+0.5)*2.0)) # 1.0/(2.0 + (Math.sin(@time*(ii*0.13) )*0.5+0.5)*2.0)
+        coord_scale * Math.sin(@time*(ii*0.21)+ii*0.37) * (@dims * 0.5 - 8.0 * @dim_scale),
+        coord_scale * Math.sin(@time*(ii*0.37)+ii*0.67) * (@dims * 0.5 - 8.0 * @dim_scale),
+        coord_scale * Math.cos(@time*(ii*0.11)+ii*0.13) * (@dims * 0.5 - 8.0 * @dim_scale),
+        1.0/(@dim_scale * (2.0 + (Math.sin(@time*(ii*0.13))*0.5+0.5)*2.0)) # 1.0/(2.0 + (Math.sin(@time*(ii*0.13) )*0.5+0.5)*2.0)
       )
     end
 
     profUpdate = SampleUtils.get_performance_counter()
 
-    DIMS.times do |zz|
-      DIMS.times do |yy|
-        offset = (zz * DIMS + yy) * DIMS
-        DIMS.times do |xx|
+    @dims.times do |zz|
+      @dims.times do |yy|
+        offset = (zz * @dims + yy) * @dims
+        @dims.times do |xx|
           xoffset = offset + xx
           dist, prod = 0.0, 1.0
           numSpheres.times do |ii|
             pos = sphere[ii]
-            dx = pos[0] - (-DIMS*0.5 + xx.to_f)
-            dy = pos[1] - (-DIMS*0.5 + yy.to_f)
-            dz = pos[2] - (-DIMS*0.5 + zz.to_f)
+            dx = pos[0] - (-@dims*0.5 + xx.to_f)
+            dy = pos[1] - (-@dims*0.5 + yy.to_f)
+            dz = pos[2] - (-@dims*0.5 + zz.to_f)
             invr = pos[3]
             dot = dx*dx + dy*dy + dz*dz
             dot *= invr*invr
@@ -595,15 +618,15 @@ class Sample02 < Sample
     profNormal = SampleUtils.get_performance_counter()
 
     normal = RVec3.new
-    (1...(DIMS-1)).each do |zz|
-      (1...(DIMS-1)).each do |yy|
-        offset = (zz * DIMS + yy) * DIMS
-        (1...(DIMS-1)).each do |xx|
+    (1...(@dims-1)).each do |zz|
+      (1...(@dims-1)).each do |yy|
+        offset = (zz * @dims + yy) * @dims
+        (1...(@dims-1)).each do |xx|
           xoffset = offset + xx
           normal.setElements(
             @m_grid[xoffset-1     ].m_val - @m_grid[xoffset+1     ].m_val,
-            @m_grid[xoffset-YPitch].m_val - @m_grid[xoffset+YPitch].m_val,
-            @m_grid[xoffset-ZPitch].m_val - @m_grid[xoffset+ZPitch].m_val
+            @m_grid[xoffset-@y_pitch].m_val - @m_grid[xoffset+@y_pitch].m_val,
+            @m_grid[xoffset-@z_pitch].m_val - @m_grid[xoffset+@z_pitch].m_val
           )
           normal.normalize!
           @m_grid[xoffset].m_normal[0] = normal[0]
@@ -618,27 +641,27 @@ class Sample02 < Sample
     profTriangulate = SampleUtils.get_performance_counter()
 
     rgb = Array.new(6) { 0.0 }
-    (DIMS - 1).times do |zz|
+    (@dims - 1).times do |zz|
       break if numVertices + 12 >= maxVertices
-      rgb[2] = zz * Invdim
-      rgb[5] = (zz+1) * Invdim
-      (DIMS - 1).times do |yy|
+      rgb[2] = zz * @inv_dim
+      rgb[5] = (zz+1) * @inv_dim
+      (@dims - 1).times do |yy|
         break if numVertices + 12 >= maxVertices
-        offset = (zz * DIMS + yy) * DIMS
-        rgb[1] = yy * Invdim
-        rgb[4] = (yy+1) * Invdim
-        (DIMS - 1).times do |xx|
+        offset = (zz * @dims + yy) * @dims
+        rgb[1] = yy * @inv_dim
+        rgb[4] = (yy+1) * @inv_dim
+        (@dims - 1).times do |xx|
           xoffset = offset + xx
-          rgb[0] = xx * Invdim
-          rgb[3] = (xx+1) * Invdim
-          pos = [-DIMS * 0.5 + xx.to_f, -DIMS * 0.5 + yy.to_f, -DIMS * 0.5 + zz.to_f]
+          rgb[0] = xx * @inv_dim
+          rgb[3] = (xx+1) * @inv_dim
+          pos = [-@dims * 0.5 + xx.to_f, -@dims * 0.5 + yy.to_f, -@dims * 0.5 + zz.to_f]
           val = [
-            @m_grid[xoffset+ZPitch+YPitch  ],
-            @m_grid[xoffset+ZPitch+YPitch+1],
-            @m_grid[xoffset+YPitch+1       ],
-            @m_grid[xoffset+YPitch         ],
-            @m_grid[xoffset+ZPitch         ],
-            @m_grid[xoffset+ZPitch+1       ],
+            @m_grid[xoffset+@z_pitch+@y_pitch  ],
+            @m_grid[xoffset+@z_pitch+@y_pitch+1],
+            @m_grid[xoffset+@y_pitch+1       ],
+            @m_grid[xoffset+@y_pitch         ],
+            @m_grid[xoffset+@z_pitch         ],
+            @m_grid[xoffset+@z_pitch+1       ],
             @m_grid[xoffset+1              ],
             @m_grid[xoffset                ],
           ]
@@ -658,16 +681,24 @@ class Sample02 < Sample
     Bgfx::set_state(Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa)
     Bgfx::submit(0, @m_program)
 
+    # Stats
     ImGui::SetNextWindowPos(ImVec2.create(@window_width - @window_width / 5.0 - 10.0, 10.0), ImGuiCond_FirstUseEver)
-    ImGui::SetNextWindowSize(ImVec2.create(@window_width / 5.0, @window_height / 4.0), ImGuiCond_FirstUseEver)
+    ImGui::SetNextWindowSize(ImVec2.create(@window_width / 5.0, @window_height / 6.0), ImGuiCond_FirstUseEver)
     ImGui::Begin("Stats", nil, 0)
-
     ImGui::Text("Num vertices:"); ImGui::SameLine(100); ImGui::Text("%5d (%6.4f%%)", :int, numVertices, :double, numVertices.to_f/maxVertices * 100)
     ImGui::Text("Update:");       ImGui::SameLine(100); ImGui::Text("% 7.3f[ms]", :double, profUpdate*toMs)
     ImGui::Text("Calc normals:"); ImGui::SameLine(100); ImGui::Text("% 7.3f[ms]", :double, profNormal*toMs)
     ImGui::Text("Triangulate:");  ImGui::SameLine(100); ImGui::Text("% 7.3f[ms]", :double, profTriangulate*toMs)
     ImGui::Text("Frame:");        ImGui::SameLine(100); ImGui::Text("% 7.3f[ms]", :double, frameTime*toMs)
+    ImGui::End()
 
+    # Parameters
+    ImGui::SetNextWindowPos(ImVec2.create(@window_width - @window_width / 5.0 - 10.0, 150.0), ImGuiCond_FirstUseEver)
+    ImGui::SetNextWindowSize(ImVec2.create(@window_width / 5.0, @window_height / 12.0), ImGuiCond_FirstUseEver)
+    ImGui::Begin("Parameters", nil, 0)
+    new_dims = FFI::MemoryPointer.new(:int, 1).put_int32(0, @dims)
+    ImGui::SliderInt("Grid Dims", new_dims, DIMS_MIN, DIMS_MAX)
+    reset_dimension(new_dims.read_int())
     ImGui::End()
 
     ImGui::Render()

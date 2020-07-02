@@ -1,6 +1,6 @@
 2020-07-03  vaiorabbit  <http://twitter.com/vaiorabbit>
 
-	* example/ruby: Added stats display for metaballs example
+	* example/ruby: Added stats display for metaballs example / DIMS can be tweaked via ImGui window
 
 2020-06-30  vaiorabbit  <http://twitter.com/vaiorabbit>
 

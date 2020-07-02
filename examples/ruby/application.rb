@@ -17,7 +17,7 @@ require_relative '06-bump/06_bump'
 include RMath3D
 
 SDL2.load_lib(SampleUtils.sdl2_dll_path())
-Bgfx.load_lib(SampleUtils.bgfx_dll_path("Debug"))
+Bgfx.load_lib(SampleUtils.bgfx_dll_path())
 ImGui.load_lib(SampleUtils.imgui_dll_path())
 
 # RubyProf::measure_mode = RubyProf::WALL_TIME
