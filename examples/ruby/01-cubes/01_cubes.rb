@@ -143,6 +143,13 @@ class Sample01 < Sample
     @m_vbh = nil
     @m_ibh = nil
     @m_program = nil
+
+    @m_r = FFI::MemoryPointer.new(:bool, 1); @m_r.write(:bool, true)
+    @m_g = FFI::MemoryPointer.new(:bool, 1); @m_g.write(:bool, true)
+    @m_b = FFI::MemoryPointer.new(:bool, 1); @m_b.write(:bool, true)
+    @m_a = FFI::MemoryPointer.new(:bool, 1); @m_a.write(:bool, true)
+
+    @m_pt = FFI::MemoryPointer.new(:int8, 1); @m_pt.write(:int8, 0)
   end
 
   def setup(width, height, debug, reset)
@@ -169,6 +176,12 @@ class Sample01 < Sample
 
     PosColorVertex.init()
 
+    @m_r.write(:bool, true)
+    @m_g.write(:bool, true)
+    @m_b.write(:bool, true)
+    @m_a.write(:bool, true)
+    @m_pt.write(:int8, 0)
+
     @m_vbh = Bgfx::create_vertex_buffer(
       Bgfx::make_ref(@@s_cubeVertices, @@s_cubeVertices.size),
       PosColorVertex.ms_layout,
@@ -182,7 +195,6 @@ class Sample01 < Sample
     @m_ibh[3] = Bgfx::create_index_buffer(Bgfx::make_ref(@@s_cubeLineStrip, @@s_cubeLineStrip.size))
     @m_ibh[4] = Bgfx::create_index_buffer(Bgfx::make_ref(@@s_cubePoints, @@s_cubePoints.size))
 
-    # @m_program = BgfxUtils.load_program("vs_cubes", "fs_cubes")
     @m_program = BgfxUtils.load_program("vs_cubes", "fs_cubes", "#{__dir__}/../")
 
     @eye.setElements(0.0, 0.0, -35.0)
@@ -222,15 +234,18 @@ class Sample01 < Sample
 
     ImGui::NewFrame()
     SampleDialog::show(self)
-    ImGui::Render()
-    ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 
     Bgfx::set_view_transform(0, @view, @proj)
     Bgfx::set_view_rect(0, 0, 0, @window_width, @window_height)
     Bgfx::touch(0)
 
-    ibh = @m_ibh[0] # TODO use enum
-    state = 0 | Bgfx::State_Write_R | Bgfx::State_Write_G | Bgfx::State_Write_B | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Cw | Bgfx::State_Msaa | @@s_ptState[0] # TODO use enum
+    ibh = @m_ibh[@m_pt.read_int8]
+    state = 0 |
+            (@m_r.read(:bool) == true ? Bgfx::State_Write_R : 0) |
+            (@m_g.read(:bool) == true ? Bgfx::State_Write_G : 0) |
+            (@m_b.read(:bool) == true ? Bgfx::State_Write_B : 0) |
+            (@m_a.read(:bool) == true ? Bgfx::State_Write_A : 0) |
+            Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Cw | Bgfx::State_Msaa | @@s_ptState[@m_pt.read_int8]
 
     mtx_t, mtx_ry, mtx_rx = RMtx4.new, RMtx4.new, RMtx4.new
     xfrm = FFI::MemoryPointer.new(:float, 16)
@@ -246,6 +261,23 @@ class Sample01 < Sample
         Bgfx::submit(0, @m_program)
       end
     end
+
+    ImGui::SetNextWindowPos(ImVec2.create(@window_width - @window_width / 5.0 - 10.0, 10.0), ImGuiCond_FirstUseEver)
+    ImGui::SetNextWindowSize(ImVec2.create(@window_width / 5.0, @window_height / 4.2), ImGuiCond_FirstUseEver)
+    ImGui::Begin("Settings", nil, 0)
+
+    ImGui::Checkbox("Write R", @m_r)
+    ImGui::Checkbox("Write G", @m_g)
+    ImGui::Checkbox("Write B", @m_b)
+    ImGui::Checkbox("Write A", @m_a)
+
+    ImGui::Text("Primitive topology:")
+    ImGui::ComboStr("", @m_pt, @@s_ptNames.join("\0"))
+
+    ImGui::End()
+
+    ImGui::Render()
+    ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())
 
     Bgfx::frame()
 
