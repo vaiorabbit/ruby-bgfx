@@ -8,11 +8,11 @@ require_relative 'imgui_impl_sdl2'
 
 require_relative 'common/utils'
 require_relative 'common/sample'
-require_relative '00-helloworld/00_helloworld'
-require_relative '01-cubes/01_cubes'
-require_relative '02-metaballs/02_metaballs'
-require_relative '03-raymarch/raymarch'
-require_relative '06-bump/06_bump'
+require_relative '00/helloworld'
+require_relative '01/cubes'
+require_relative '02/metaballs'
+require_relative '03/raymarch'
+require_relative '06/bump'
 
 include RMath3D
 
@@ -199,7 +199,7 @@ if __FILE__ == $PROGRAM_NAME
     pp e
   ensure
     app.teardown
-    result = RubyProf.stop
+    # result = RubyProf.stop
     # printer = RubyProf::FlatPrinter.new(result)
     # printer.print(STDOUT)
   end
