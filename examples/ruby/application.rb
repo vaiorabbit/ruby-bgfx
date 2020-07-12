@@ -43,8 +43,6 @@ class Application
     @samples = nil
     @current_sample = nil
     @sample_index = 0
-    # @sample_state = nil
-    # @sample_paused = false
   end
 
   def setup(width, height)
@@ -165,22 +163,15 @@ class Application
             @current_sample.resize(@width, @height)
 
             SDL_SetWindowSize(@window, @width, @height)
+          when SDL_WINDOWEVENT_CLOSE
+            sample_state = Sample::State::Quit
           end
-        when SDL_KEYDOWN
-=begin
-          case event[:key][:keysym][:sym]
-          when SDL2::SDLK_ESCAPE
-            done = true
-          when SDL2::SDLK_n
-            @sample_state = Sample::State::Next
-          when SDL2::SDLK_p
-            @sample_state = Sample::State::Previous
-          end
-=end
         end
 
         @current_sample.handle_event(event)
       end
+
+      next if sample_state == Sample::State::Quit
 
       # Call sample update
       ImGui::ImplSDL2_NewFrame(@window)
