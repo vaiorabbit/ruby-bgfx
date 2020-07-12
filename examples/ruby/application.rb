@@ -12,6 +12,7 @@ require_relative '00/helloworld'
 require_relative '01/cubes'
 require_relative '02/metaballs'
 require_relative '03/raymarch'
+require_relative '04/mesh'
 require_relative '06/bump'
 
 include RMath3D
@@ -79,6 +80,7 @@ class Application
     ImGui::ImplSDL2_Init(@window)
 
     @samples = [
+      Sample04.new,
       Sample00.new,
       Sample01.new,
       Sample02.new,
