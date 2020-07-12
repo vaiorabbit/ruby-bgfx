@@ -3,6 +3,12 @@ require 'ffi'
 require_relative '../../../bindings/ruby/bgfx'
 
 module SampleMesh
+  BGFX_CHUNK_MAGIC_VB = 'V'.ord | ('B'.ord << 8) | (' '.ord << 16) | 0x01 << 24
+  BGFX_CHUNK_MAGIC_VBC = 'V'.ord | ('B'.ord << 8) | ('C'.ord << 16) | 0x0 << 24
+  BGFX_CHUNK_MAGIC_IB = 'I'.ord | ('B'.ord << 8) | (' '.ord << 16) | 0x0 << 24
+  BGFX_CHUNK_MAGIC_IBC = 'I'.ord | ('B'.ord << 8) | ('C'.ord << 16) | 0x1 << 24
+  BGFX_CHUNK_MAGIC_PRI = 'P'.ord | ('R'.ord << 8) | ('I'.ord << 16) | 0x0 << 24
+
   class Sphere
     attr_accessor :center, :radius
     def initialize
@@ -65,7 +71,9 @@ module SampleMesh
     attr_accessor :m_layout
     attr_accessor :m_groupd
 
-    def initialize; end
+    def initialize
+      @instance = nil
+    end
 
     def load(data, ramcopy); end
 
