@@ -95,13 +95,91 @@ module SampleMesh
     end
   end
 
+  module VertexLayout
+    @@id_to_attrib = {
+      0x0001 => Bgfx::Attrib::Position,
+      0x0002 => Bgfx::Attrib::Normal,
+      0x0003 => Bgfx::Attrib::Tangent,
+      0x0004 => Bgfx::Attrib::Bitangent,
+      0x0005 => Bgfx::Attrib::Color0,
+      0x0006 => Bgfx::Attrib::Color1,
+      0x0018 => Bgfx::Attrib::Color2,
+      0x0019 => Bgfx::Attrib::Color3,
+      0x000e => Bgfx::Attrib::Indices,
+      0x000f => Bgfx::Attrib::Weight,
+      0x0010 => Bgfx::Attrib::TexCoord0,
+      0x0011 => Bgfx::Attrib::TexCoord1,
+      0x0012 => Bgfx::Attrib::TexCoord2,
+      0x0013 => Bgfx::Attrib::TexCoord3,
+      0x0014 => Bgfx::Attrib::TexCoord4,
+      0x0015 => Bgfx::Attrib::TexCoord5,
+      0x0016 => Bgfx::Attrib::TexCoord6,
+      0x0017 => Bgfx::Attrib::TexCoord7,
+    }
+
+    @@id_to_attrib_type = {
+      0x0001 => Bgfx::AttribType::Uint8,
+      0x0005 => Bgfx::AttribType::Uint10,
+      0x0002 => Bgfx::AttribType::Int16,
+      0x0003 => Bgfx::AttribType::Half,
+      0x0004 => Bgfx::AttribType::Float,      
+    }
+
+    private_class_method
+    def self.id_to_attrib(id)
+      @@id_to_attrib[id]
+    end
+
+    private_class_method
+    def self.id_to_attrib_type(id)
+      @@id_to_attrib_type[id]
+    end
+
+    def self.read(io, layout)
+      total = 0
+      num_attrs = FFI::MemoryPointer.new(:uint8, 1, false).write_string(io.read(FFI::type_size(:uint8)))
+      total += num_attrs.size
+      stride = FFI::MemoryPointer.new(:uint16, 1, false).write_string(io.read(FFI::type_size(:uint16)))
+      total += stride.type_size
+
+      offset = FFI::MemoryPointer.new(:uint16, 1, false)
+      attrib_id = FFI::MemoryPointer.new(:uint16, 1, false)
+      num = FFI::MemoryPointer.new(:uint8, 1, false)
+      attrib_type_id = FFI::MemoryPointer.new(:uint16, 1, false)
+      normalized = FFI::MemoryPointer.new(:bool, 1, false)
+      as_int = FFI::MemoryPointer.new(:bool, 1, false)
+
+      layout.begin()
+      num_attrs.read_uint8.times do |ii|
+        offset.write_string(io.read(FFI::type_size(:uint16)))
+        attrib_id.write_string(io.read(FFI::type_size(:uint16)))
+        num.write_string(io.read(FFI::type_size(:uint8)))
+        attrib_type_id.write_string(io.read(FFI::type_size(:uint16)))
+        normalized.write_string(io.read(FFI::type_size(:bool)))
+        as_int.write_string(io.read(FFI::type_size(:bool)))
+        total += (offset.size + attrib_id.size + num.size + attrib_type_id.size + normalized.size + as_int.size)
+
+        attrib = id_to_attrib(attrib_id.read_uint16)
+
+        type = id_to_attrib_type(attrib_type_id.read_uint16)
+        if attrib != Bgfx::Attrib::Count && type != Bgfx::Attrib::Count
+          layout.add(attrib, num.read(:uint8), type, normalized.read(:bool), as_int.read(:bool))
+          layout[:offset][attrib] = offset.read(:uint16)
+        end
+      end
+      layout.end()
+      layout[:stride] = stride.read_uint16
+      return total
+    end
+  end
+
   class Mesh
     attr_accessor :m_layout
     attr_accessor :m_groups
 
     def initialize
       @instance = nil
-      @m_layout = Bgfx_vertex_layout_t.new(FFI::MemoryPointer.new(:uint8, Bgfx_vertex_layout_t.size, false))
+      @m_layout = Bgfx_vertex_layout_t.new#(FFI::MemoryPointer.new(:uint8, Bgfx_vertex_layout_t.size, false))
       @m_groups = []
     end
 
@@ -120,8 +198,15 @@ module SampleMesh
           puts("Aabb #{group.m_aabb[:min][0]},#{group.m_aabb[:min][1]},#{group.m_aabb[:min][2]},  #{group.m_aabb[:max][0]},#{group.m_aabb[:max][1]},#{group.m_aabb[:max][2]}")
           puts("Obb #{group.m_obb[:mtx].to_a}")
 
-          # TODO port bgfx::read(VertexLayout)
-          # Ref: bgfx/src/vertexlayout.h|cpp
+          SampleMesh::VertexLayout::read(io, @m_layout)
+
+          # NOTE : We can't find APIs like bgfx_vertex_layout_get_offset, bgfx_vertex_layout_get_stride, bgfx_vertex_layout_get_size.
+          # These are marked as 'cpponly' in the IDL (bgfx.idl).
+          # stride = @m_layout.get_stride()
+          stride = @m_layout[:stride]
+          pp stride
+
+          # TODO
 
           group.m_numVertices = FFI::MemoryPointer.new(:uint16, 1, false).write_string(io.read(FFI::type_size(:uint16)))
           puts("#vertices #{group.m_numVertices.get_uint16(0)}")
