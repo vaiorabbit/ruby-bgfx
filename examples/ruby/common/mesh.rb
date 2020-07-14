@@ -204,13 +204,12 @@ module SampleMesh
           # These are marked as 'cpponly' in the IDL (bgfx.idl).
           # stride = @m_layout.get_stride()
           stride = @m_layout[:stride]
-          pp stride
-
-          # TODO
-
           group.m_numVertices = FFI::MemoryPointer.new(:uint16, 1, false).write_string(io.read(FFI::type_size(:uint16)))
-          puts("#vertices #{group.m_numVertices.get_uint16(0)}")
-          #pp group.m_aabb[:min][0], 
+          raw_mem = Bgfx::alloc(group.m_numVertices.read_uint16 * stride)
+          mem = Bgfx_memory_t.new(raw_mem) # TODO make Bgfx::alloc directly return Bgfx_memory_t instance
+          mem[:data].write_string(io.read(mem[:size]))
+          # TODO if ramcopy == true
+          group.m_vbh = Bgfx::create_vertex_buffer(mem, m_layout)
         when BGFX_CHUNK_MAGIC_VBC
           pp "0x#{chunk.unpack1("L").to_s(16)}"
         when BGFX_CHUNK_MAGIC_IB

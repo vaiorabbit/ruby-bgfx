@@ -1,1 +1,3 @@
 examples/runtime/*
+examples/ruby/doc/*
+examples/ruby/.yardoc/*
