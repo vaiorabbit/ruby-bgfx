@@ -4,6 +4,7 @@
 #
 
 require_relative '../common/sample'
+require_relative '../common/mesh'
 
 ################################################################################
 
@@ -13,7 +14,9 @@ class Sample04 < Sample
     super("04-mesh", "https://bkaradzic.github.io/bgfx/examples.html#mesh", "Loading meshes.")
     @ndc_homogeneous = true
 
+    @u_time = nil
     @m_program = nil
+    @m_mesh = nil
   end
 
   def setup(width, height, debug, reset)
@@ -38,8 +41,15 @@ class Sample04 < Sample
     Bgfx::set_debug(debug)
     Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
 
-    @eye.setElements(0.0, 0.0, -50.0)
-    @at.setElements(0.0, 0.0, 0.0)
+    @u_time = Bgfx::create_uniform("u_time", Bgfx::UniformType::Vec4)
+    @m_program = BgfxUtils.load_program("vs_mesh", "fs_mesh")
+    @m_mesh = SampleMesh::Mesh.new
+    File.open('../runtime/meshes/bunny.bin') do |bin|
+      @m_mesh.load(bin)
+    end
+
+    @eye.setElements(0.0, 0.0, -2.5)
+    @at.setElements(0.0, 1.0, 0.0)
     @up.setElements(0.0,  1.0,  0.0)
     @mtx_view.lookAtRH( @eye, @at, @up )
     @view.write_array_of_float(@mtx_view.to_a)
@@ -75,10 +85,17 @@ class Sample04 < Sample
     Bgfx::set_view_rect(0, 0, 0, @window_width, @window_height)
     Bgfx::touch(0)
 
-    #mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.rotationY(@time) * RMtx4.new.rotationX(0.67 * @time)).to_a)
+    Bgfx::set_uniform(@u_time, [@time, 0, 0, 0].pack("F4"))
+    #Bgfx::set_uniform(@u_time, [0, 0, 0, 0].pack("F4"))
+
+    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.rotationY(@time) * RMtx4.new.rotationX(0.67 * @time)).to_a)
+    #mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.setIdentity.to_a))
 
     #Bgfx::set_transform(mtx, 1)
-    Bgfx::set_state(Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa)
+    #Bgfx::set_state(Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa)
+    state = 0 | Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa
+
+    @m_mesh.submit(0, @m_program, mtx, state)
 
     ImGui::Render()
     ImGui::ImplBgfx_RenderDrawData(ImGui::GetDrawData())

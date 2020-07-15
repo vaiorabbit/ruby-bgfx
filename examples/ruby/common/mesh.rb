@@ -61,9 +61,9 @@ module SampleMesh
       @m_numIndices = 0
       @m_startVertex = 0
       @m_numVertices = 0
-      @m_sphere = Sphere.new
-      @m_aabb = Aabb.new
-      @m_obb = Obb.new
+      @m_sphere = SphereBuf.new
+      @m_aabb = AabbBuf.new
+      @m_obb = ObbBuf.new
     end
   end
 
@@ -114,7 +114,7 @@ module SampleMesh
       0x0014 => Bgfx::Attrib::TexCoord4,
       0x0015 => Bgfx::Attrib::TexCoord5,
       0x0016 => Bgfx::Attrib::TexCoord6,
-      0x0017 => Bgfx::Attrib::TexCoord7,
+      0x0017 => Bgfx::Attrib::TexCoord7
     }
 
     @@id_to_attrib_type = {
@@ -122,24 +122,23 @@ module SampleMesh
       0x0005 => Bgfx::AttribType::Uint10,
       0x0002 => Bgfx::AttribType::Int16,
       0x0003 => Bgfx::AttribType::Half,
-      0x0004 => Bgfx::AttribType::Float,      
+      0x0004 => Bgfx::AttribType::Float
     }
 
-    private_class_method
     def self.id_to_attrib(id)
       @@id_to_attrib[id]
     end
 
-    private_class_method
+
     def self.id_to_attrib_type(id)
       @@id_to_attrib_type[id]
     end
 
     def self.read(io, layout)
       total = 0
-      num_attrs = FFI::MemoryPointer.new(:uint8, 1, false).write_string(io.read(FFI::type_size(:uint8)))
+      num_attrs = FFI::MemoryPointer.new(:uint8, 1, false).write_string(io.read(FFI.type_size(:uint8)))
       total += num_attrs.size
-      stride = FFI::MemoryPointer.new(:uint16, 1, false).write_string(io.read(FFI::type_size(:uint16)))
+      stride = FFI::MemoryPointer.new(:uint16, 1, false).write_string(io.read(FFI.type_size(:uint16)))
       total += stride.type_size
 
       offset = FFI::MemoryPointer.new(:uint16, 1, false)
@@ -149,14 +148,14 @@ module SampleMesh
       normalized = FFI::MemoryPointer.new(:bool, 1, false)
       as_int = FFI::MemoryPointer.new(:bool, 1, false)
 
-      layout.begin()
-      num_attrs.read_uint8.times do |ii|
-        offset.write_string(io.read(FFI::type_size(:uint16)))
-        attrib_id.write_string(io.read(FFI::type_size(:uint16)))
-        num.write_string(io.read(FFI::type_size(:uint8)))
-        attrib_type_id.write_string(io.read(FFI::type_size(:uint16)))
-        normalized.write_string(io.read(FFI::type_size(:bool)))
-        as_int.write_string(io.read(FFI::type_size(:bool)))
+      layout.begin
+      num_attrs.read_uint8.times do |_ii|
+        offset.write_string(io.read(FFI.type_size(:uint16)))
+        attrib_id.write_string(io.read(FFI.type_size(:uint16)))
+        num.write_string(io.read(FFI.type_size(:uint8)))
+        attrib_type_id.write_string(io.read(FFI.type_size(:uint16)))
+        normalized.write_string(io.read(FFI.type_size(:bool)))
+        as_int.write_string(io.read(FFI.type_size(:bool)))
         total += (offset.size + attrib_id.size + num.size + attrib_type_id.size + normalized.size + as_int.size)
 
         attrib = id_to_attrib(attrib_id.read_uint16)
@@ -167,9 +166,9 @@ module SampleMesh
           layout[:offset][attrib] = offset.read(:uint16)
         end
       end
-      layout.end()
+      layout.end
       layout[:stride] = stride.read_uint16
-      return total
+      total
     end
   end
 
@@ -179,53 +178,97 @@ module SampleMesh
 
     def initialize
       @instance = nil
-      @m_layout = Bgfx_vertex_layout_t.new#(FFI::MemoryPointer.new(:uint8, Bgfx_vertex_layout_t.size, false))
+      @m_layout = Bgfx_vertex_layout_t.new # (FFI::MemoryPointer.new(:uint8, Bgfx_vertex_layout_t.size, false))
       @m_groups = []
     end
 
-    def load(io, ramcopy = false)
+    def load(io, _ramcopy = false)
       group = Group.new
-      chunk = " " * 4
+      chunk = ' ' * 4
       while io.read(4, chunk)
-        case chunk.unpack1("L")
+        case chunk.unpack1('L')
         when BGFX_CHUNK_MAGIC_VB
-          # pp "0x#{chunk.unpack1("L").to_s(16)}"
           group.m_sphere.pointer.write_string(io.read(SphereBuf.size))
           group.m_aabb.pointer.write_string(io.read(AabbBuf.size))
           group.m_obb.pointer.write_string(io.read(ObbBuf.size))
 
-          puts("Sphere #{group.m_sphere[:radius]}, #{group.m_sphere[:center][0]}, #{group.m_sphere[:center][1]}, #{group.m_sphere[:center][2]}")
-          puts("Aabb #{group.m_aabb[:min][0]},#{group.m_aabb[:min][1]},#{group.m_aabb[:min][2]},  #{group.m_aabb[:max][0]},#{group.m_aabb[:max][1]},#{group.m_aabb[:max][2]}")
-          puts("Obb #{group.m_obb[:mtx].to_a}")
+          # puts("Sphere #{group.m_sphere[:radius]}, #{group.m_sphere[:center][0]}, #{group.m_sphere[:center][1]}, #{group.m_sphere[:center][2]}")
+          # puts("Aabb #{group.m_aabb[:min][0]},#{group.m_aabb[:min][1]},#{group.m_aabb[:min][2]},  #{group.m_aabb[:max][0]},#{group.m_aabb[:max][1]},#{group.m_aabb[:max][2]}")
+          # puts("Obb #{group.m_obb[:mtx].to_a}")
 
-          SampleMesh::VertexLayout::read(io, @m_layout)
+          SampleMesh::VertexLayout.read(io, @m_layout)
 
           # NOTE : We can't find APIs like bgfx_vertex_layout_get_offset, bgfx_vertex_layout_get_stride, bgfx_vertex_layout_get_size.
           # These are marked as 'cpponly' in the IDL (bgfx.idl).
           # stride = @m_layout.get_stride()
           stride = @m_layout[:stride]
-          group.m_numVertices = FFI::MemoryPointer.new(:uint16, 1, false).write_string(io.read(FFI::type_size(:uint16)))
-          raw_mem = Bgfx::alloc(group.m_numVertices.read_uint16 * stride)
-          mem = Bgfx_memory_t.new(raw_mem) # TODO make Bgfx::alloc directly return Bgfx_memory_t instance
+          group.m_numVertices = FFI::MemoryPointer.new(:uint16, 1, false).write_string(io.read(FFI.type_size(:uint16)))
+          raw_mem = Bgfx.alloc(group.m_numVertices.read_uint16 * stride)
+          mem = Bgfx_memory_t.new(raw_mem) # TODO: make Bgfx::alloc directly return Bgfx_memory_t instance
           mem[:data].write_string(io.read(mem[:size]))
-          # TODO if ramcopy == true
-          group.m_vbh = Bgfx::create_vertex_buffer(mem, m_layout)
-        when BGFX_CHUNK_MAGIC_VBC
-          pp "0x#{chunk.unpack1("L").to_s(16)}"
-        when BGFX_CHUNK_MAGIC_IB
-          pp "0x#{chunk.unpack1("L").to_s(16)}"
-        when BGFX_CHUNK_MAGIC_IBC
-          pp "0x#{chunk.unpack1("L").to_s(16)}"
-        when BGFX_CHUNK_MAGIC_PRI
-          pp "0x#{chunk.unpack1("L").to_s(16)}"
-        else
+          # TODO: if ramcopy == true
+          group.m_vbh = Bgfx.create_vertex_buffer(mem, m_layout)
 
+        when BGFX_CHUNK_MAGIC_VBC
+          pp "[TODO] VBC 0x#{chunk.unpack1('L').to_s(16)}"
+          # TODO
+        when BGFX_CHUNK_MAGIC_IB
+          # pp "IB 0x#{chunk.unpack1("L").to_s(16)}"
+          group.m_numIndices = FFI::MemoryPointer.new(:uint32, 1, false).write_string(io.read(FFI.type_size(:uint32)))
+          raw_mem = Bgfx.alloc(group.m_numIndices.read_uint32 * 2)
+          mem = Bgfx_memory_t.new(raw_mem) # TODO: make Bgfx::alloc directly return Bgfx_memory_t instance
+          mem[:data].write_string(io.read(mem[:size]))
+          # TODO: if ramcopy == true
+          group.m_ibh = Bgfx.create_index_buffer(mem)
+
+        when BGFX_CHUNK_MAGIC_IBC
+          pp "[TODO] IBC 0x#{chunk.unpack1('L').to_s(16)}"
+          # TODO
+        when BGFX_CHUNK_MAGIC_PRI
+          # pp "PRI 0x#{chunk.unpack1("L").to_s(16)}"
+          len = io.read(FFI.type_size(:uint16)).unpack1('S')
+          material = ' ' * len
+          io.read(len, material)
+
+          num = io.read(FFI.type_size(:uint16)).unpack1('S')
+          num.times do |_ii|
+            len = io.read(FFI.type_size(:uint16)).unpack1('S')
+            name = ' ' * len
+            io.read(len, name)
+
+            prim = Primitive.new
+            prim.m_startIndex = io.read(FFI.type_size(:uint32)).unpack1('L')
+            prim.m_numIndices = io.read(FFI.type_size(:uint32)).unpack1('L')
+            prim.m_startVertex = io.read(FFI.type_size(:uint32)).unpack1('L')
+            prim.m_numVertices = io.read(FFI.type_size(:uint32)).unpack1('L')
+            prim.m_sphere.pointer.write_string(io.read(SphereBuf.size))
+            prim.m_aabb.pointer.write_string(io.read(AabbBuf.size))
+            prim.m_obb.pointer.write_string(io.read(ObbBuf.size))
+
+            group.m_prims << prim
+          end
+
+          m_groups << group
+          group = Group.new
         end
       end
     end
 
     def unload; end
 
-    def submit(id, program, mtx, state); end
+    def submit(id, program, mtx, state = Bgfx::State_Mask)
+      if Bgfx::State_Mask == state
+        state = 0 | Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Less | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa
+      end
+
+      Bgfx.set_transform(mtx, 1) # TODO: Add missing default argument 'def self.set_transform(_mtx, _num = 1)''
+      Bgfx.set_state(state)
+
+      m_groups.each do |group|
+        Bgfx.set_index_buffer(group.m_ibh, 0, 0xFFFFFFFF) # TODO Add missing default arguments _firstIndex, _numIndices
+        Bgfx.set_vertex_buffer(0, group.m_vbh, 0, 0xFFFFFFFF)
+        Bgfx.submit(id, program, 0, group == m_groups.last ? (Bgfx::Discard_IndexBuffer | Bgfx::Discard_VertexStreams | Bgfx::Discard_State) : Bgfx::Discard_None)
+      end
+    end
   end
 end
