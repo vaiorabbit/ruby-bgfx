@@ -107,12 +107,12 @@ module SampleMesh
 
       layout.begin
       num_attrs.times do
-        offset = io.read(FFI.type_size(:uint16)).unpack1("S");           total += FFI.type_size(:uint16)
-        attrib_id = io.read(FFI.type_size(:uint16)).unpack1("S");        total += FFI.type_size(:uint16)
-        num = io.read(FFI.type_size(:uint8)).unpack1("C");               total += FFI.type_size(:uint8)
-        attrib_type_id = io.read(FFI.type_size(:uint16)).unpack1("S");   total += FFI.type_size(:uint16)
-        normalized = io.read(FFI.type_size(:bool)).unpack1("C") != 0;    total += FFI.type_size(:bool)
-        as_int = io.read(FFI.type_size(:bool)).unpack1("C") != 0;        total += FFI.type_size(:bool)
+        offset         = io.read(FFI.type_size(:uint16)).unpack1("S");    total += FFI.type_size(:uint16)
+        attrib_id      = io.read(FFI.type_size(:uint16)).unpack1("S");    total += FFI.type_size(:uint16)
+        num            = io.read(FFI.type_size(:uint8)).unpack1("C");     total += FFI.type_size(:uint8)
+        attrib_type_id = io.read(FFI.type_size(:uint16)).unpack1("S");    total += FFI.type_size(:uint16)
+        normalized     = io.read(FFI.type_size(:bool)).unpack1("C") != 0; total += FFI.type_size(:bool)
+        as_int         = io.read(FFI.type_size(:bool)).unpack1("C") != 0; total += FFI.type_size(:bool)
 
         attrib = id_to_attrib(attrib_id)
         type = id_to_attrib_type(attrib_type_id)
@@ -161,7 +161,7 @@ module SampleMesh
           group.m_vbh = Bgfx.create_vertex_buffer(mem, m_layout)
 
         when BGFX_CHUNK_MAGIC_VBC
-          pp "[TODO] VBC 0x#{chunk.unpack1('L').to_s(16)}"
+          puts "[TODO] VBC 0x#{chunk.unpack1('L').to_s(16)}"
 
         when BGFX_CHUNK_MAGIC_IB
           group.m_numIndices = FFI::MemoryPointer.new(:uint32, 1, false).write_string(io.read(FFI.type_size(:uint32)))
@@ -171,7 +171,7 @@ module SampleMesh
           group.m_ibh = Bgfx.create_index_buffer(mem)
 
         when BGFX_CHUNK_MAGIC_IBC
-          pp "[TODO] IBC 0x#{chunk.unpack1('L').to_s(16)}"
+          puts "[TODO] IBC 0x#{chunk.unpack1('L').to_s(16)}"
 
         when BGFX_CHUNK_MAGIC_PRI
           len = io.read(FFI.type_size(:uint16)).unpack1('S')
@@ -185,10 +185,7 @@ module SampleMesh
             io.read(len, name)
 
             prim = Primitive.new
-            prim.m_startIndex = io.read(FFI.type_size(:uint32)).unpack1('L')
-            prim.m_numIndices = io.read(FFI.type_size(:uint32)).unpack1('L')
-            prim.m_startVertex = io.read(FFI.type_size(:uint32)).unpack1('L')
-            prim.m_numVertices = io.read(FFI.type_size(:uint32)).unpack1('L')
+            prim.m_startIndex, prim.m_numIndices, prim.m_startVertex, prim.m_numVertices = io.read(FFI.type_size(:uint32) * 4).unpack('L4')
             prim.m_sphere.pointer.write_string(io.read(Sphere.size))
             prim.m_aabb.pointer.write_string(io.read(Aabb.size))
             prim.m_obb.pointer.write_string(io.read(Obb.size))
