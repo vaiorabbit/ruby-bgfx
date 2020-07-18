@@ -57,7 +57,7 @@ module SampleMesh
       @m_indices = nil
       @m_sphere = Sphere.new
       @m_aabb = Aabb.new
-      @m_obb = Obb.new#
+      @m_obb = Obb.new
       @m_prims = [] # array of Primitive
     end
   end
