@@ -199,7 +199,13 @@ module SampleMesh
       end
     end
 
-    def unload; end
+    def unload
+      @m_groups.each do |group|
+        Bgfx::destroy_vertex_buffer(group.m_vbh)
+        Bgfx::destroy_index_buffer(group.m_ibh) if group.m_ibh
+
+      end
+    end
 
     def submit(id, program, mtx, state = Bgfx::State_Mask)
       if Bgfx::State_Mask == state
