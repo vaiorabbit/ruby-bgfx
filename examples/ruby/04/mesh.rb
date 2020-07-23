@@ -39,8 +39,7 @@ class Sample04 < Sample
     ImGui::ImplBgfx_Init()
 
     Bgfx::set_debug(debug)
-    # Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0) # for GL/RH Coordinate
-    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 0.0, 0) # for GL/LH Coordinate
+    Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
 
     @u_time = Bgfx::create_uniform("u_time", Bgfx::UniformType::Vec4)
     @m_program = BgfxUtils.load_program("vs_mesh", "fs_mesh", "./" )
@@ -53,14 +52,13 @@ class Sample04 < Sample
     @at.setElements(0.0, 1.0, 0.0)
     @up.setElements(0.0,  1.0,  0.0)
     @mtx_view.lookAtLH( @eye, @at, @up )
-    # @mtx_view.lookAtRH(@eye, @at, @up)
     @view.write_array_of_float(@mtx_view.to_a)
 
     @mtx_proj.perspectiveFovLH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0, @ndc_homogeneous )
-    # @mtx_proj.perspectiveFovRH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0, @ndc_homogeneous )
     @proj.write_array_of_float(@mtx_proj.to_a)
 
-    # pp RVec3.new(0.0, 1.0, -2.399999).transformCoord(@mtx_view).transformCoord(@mtx_proj)
+    # ret = RVec3.new(0.0, 1.0, -2.399999).transformCoord(@mtx_view).transformCoord(@mtx_proj)
+    # pp ret[0], ret[1], ret[2]
   end
 
   def teardown()
@@ -78,7 +76,6 @@ class Sample04 < Sample
   def resize(width, height)
     super(width, height)
     @mtx_proj.perspectiveFovLH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0, @ndc_homogeneous )
-    # @mtx_proj.perspectiveFovRH( 60.0*Math::PI/180.0, width.to_f/height.to_f, 0.1, 100.0, @ndc_homogeneous )
     @proj.write_array_of_float(@mtx_proj.to_a)
   end
 
@@ -97,10 +94,9 @@ class Sample04 < Sample
 
     Bgfx::set_uniform(@u_time, [@time, 0, 0, 0].pack("F4"))
 
-    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float((RMtx4.new.rotationY(@time * 0.37)).to_a)
+    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.rotationY(@time * 0.37).to_a)
 
-    # state = Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Lequal | Bgfx::State_Cull_Cw | Bgfx::State_Msaa # for GL/RH Coordinate
-    state = Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Gequal | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa # for GL/LH Coordinate
+    state = Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Lequal | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa
 
     @m_mesh.submit(0, @m_program, mtx, state)
 

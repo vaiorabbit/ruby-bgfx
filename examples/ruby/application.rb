@@ -78,11 +78,11 @@ class Application
     ImGui::ImplSDL2_Init(@window)
 
     @samples = [
-      Sample04.new,
       Sample00.new,
       Sample01.new,
       Sample02.new,
       Sample03.new,
+      Sample04.new,
       Sample06.new,
     ]
     @current_sample = nil
