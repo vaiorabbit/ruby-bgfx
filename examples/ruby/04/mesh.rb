@@ -1,6 +1,6 @@
 # coding: utf-8
 #
-# Ref.: bgfx/examples/02-metaballs/metaballs.cpp
+# Ref.: bgfx/examples/04-mesg/mesh.cpp
 #
 
 require_relative '../common/sample'
