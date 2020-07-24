@@ -95,60 +95,61 @@ class Sample07 < Sample
     @reset |= Bgfx::Reset_Vsync
 
     @m_callback = Bgfx_callback_interface_t.new
+    @cb = Bgfx_callback_vtbl_t.new
     pp @m_callback[:vtbl] 
     # @m_callback[:vtbl][:fatal] = Proc.new do |_this, _filePath, _line, _code, _str|
-    @m_callback[:vtbl][:fatal] = FFI::Function.new(:void, [:pointer, :string, :uint16, :uint32, :string], blocking: true) do |_this, _filePath, _line, _code, _str|
+    @cb[:fatal] = FFI::Function.new(:void, [:pointer, :string, :uint16, :uint32, :string], blocking: true) do |_this, _filePath, _line, _code, _str|
       pp _this
     end
-    # @m_callback[:vtbl][:trace_vargs] = Proc.new do |_this, _filePath, _line, _format, _argList|
-    @m_callback[:vtbl][:trace_vargs] = FFI::Function.new(:void, [:pointer, :string, :uint16, :string, :varargs], blocking: true) do |_this, _filePath, _line, _format, _argList|
+    # @cb[:trace_vargs] = Proc.new do |_this, _filePath, _line, _format, _argList|
+    @cb[:trace_vargs] = FFI::Function.new(:void, [:pointer, :string, :uint16, :string, :varargs], blocking: true) do |_this, _filePath, _line, _format, _argList|
       pp _this
     end
-    # @m_callback[:vtbl][:profiler_begin] = Proc.new do |_this, _name, _abgr, _filePath, _line|
-    @m_callback[:vtbl][:profiler_begin] = FFI::Function.new(:void, [:pointer, :string, :uint32, :string, :uint16], blocking: true) do |_this, _name, _abgr, _filePath, _line|
+    # @cb[:profiler_begin] = Proc.new do |_this, _name, _abgr, _filePath, _line|
+    @cb[:profiler_begin] = FFI::Function.new(:void, [:pointer, :string, :uint32, :string, :uint16], blocking: true) do |_this, _name, _abgr, _filePath, _line|
       pp _this
     end
-    # @m_callback[:vtbl][:profiler_begin_literal] = Proc.new do |_this, _name, _abgr, _filePath, _line|
-    @m_callback[:vtbl][:profiler_begin_literal] = FFI::Function.new(:void, [:pointer, :string, :uint32, :string, :uint16], blocking: true) do |_this, _name, _abgr, _filePath, _line|
+    # @cb[:profiler_begin_literal] = Proc.new do |_this, _name, _abgr, _filePath, _line|
+    @cb[:profiler_begin_literal] = FFI::Function.new(:void, [:pointer, :string, :uint32, :string, :uint16], blocking: true) do |_this, _name, _abgr, _filePath, _line|
       pp _this
     end
-    # @m_callback[:vtbl][:profiler_end] = Proc.new do |_this|
-    @m_callback[:vtbl][:profiler_end] = FFI::Function.new(:void, [:pointer], blocking: true) do |_this|
+    # @cb[:profiler_end] = Proc.new do |_this|
+    @cb[:profiler_end] = FFI::Function.new(:void, [:pointer], blocking: true) do |_this|
       pp _this
     end
-    # @m_callback[:vtbl][:cache_read_size] = Proc.new do |_this, _id|
-    @m_callback[:vtbl][:cache_read_size] = FFI::Function.new(:uint32, [:pointer, :uint64], blocking: true) do |_this, _id|
+    # @cb[:cache_read_size] = Proc.new do |_this, _id|
+    @cb[:cache_read_size] = FFI::Function.new(:uint32, [:pointer, :uint64], blocking: true) do |_this, _id|
       pp _this
       return 0
     end
-    # @m_callback[:vtbl][:cache_read] = Proc.new do |_this, _id, _data, _size|
-    @m_callback[:vtbl][:cache_read] = FFI::Function.new(:bool, [:pointer, :uint64, :pointer, :uint32], blocking: true) do |_this, _id, _data, _size|
+    # @cb[:cache_read] = Proc.new do |_this, _id, _data, _size|
+    @cb[:cache_read] = FFI::Function.new(:bool, [:pointer, :uint64, :pointer, :uint32], blocking: true) do |_this, _id, _data, _size|
       pp _this
       return false
     end
-    # @m_callback[:vtbl][:cache_write] = Proc.new do |_this, _id, _data, _size|
-    @m_callback[:vtbl][:cache_write] = FFI::Function.new(:void, [:pointer, :uint64, :pointer, :uint32], blocking: true) do |_this, _id, _data, _size|
+    # @cb[:cache_write] = Proc.new do |_this, _id, _data, _size|
+    @cb[:cache_write] = FFI::Function.new(:void, [:pointer, :uint64, :pointer, :uint32], blocking: true) do |_this, _id, _data, _size|
       pp _this
     end
-    # @m_callback[:vtbl][:screen_shot] = Proc.new do |_this, _filePath, _width, _height, _pitch, _data, _size, _yflip|
-    @m_callback[:vtbl][:screen_shot] = FFI::Function.new(:void, [:pointer, :string, :uint32, :uint32, :uint32, :pointer, :uint32, :bool], blocking: true) do |_this, _filePath, _width, _height, _pitch, _data, _size, _yflip|
+    # @cb[:screen_shot] = Proc.new do |_this, _filePath, _width, _height, _pitch, _data, _size, _yflip|
+    @cb[:screen_shot] = FFI::Function.new(:void, [:pointer, :string, :uint32, :uint32, :uint32, :pointer, :uint32, :bool], blocking: true) do |_this, _filePath, _width, _height, _pitch, _data, _size, _yflip|
       pp _this
     end
-    # @m_callback[:vtbl][:capture_begin] = Proc.new do |_this, _width, _height, _pitch, _format, _yflip|
-    @m_callback[:vtbl][:capture_begin] = FFI::Function.new(:void, [:pointer, :uint32, :uint32, :uint32, :bool], blocking: true) do |_this, _width, _height, _pitch, _format, _yflip|
+    # @cb[:capture_begin] = Proc.new do |_this, _width, _height, _pitch, _format, _yflip|
+    @cb[:capture_begin] = FFI::Function.new(:void, [:pointer, :uint32, :uint32, :uint32, :bool], blocking: true) do |_this, _width, _height, _pitch, _format, _yflip|
       pp _this
     end
-    # @m_callback[:vtbl][:capture_end] = Proc.new do |_this|
-    @m_callback[:vtbl][:capture_end] = FFI::Function.new(:void, [:pointer], blocking: true) do |_this|
+    # @cb[:capture_end] = Proc.new do |_this|
+    @cb[:capture_end] = FFI::Function.new(:void, [:pointer], blocking: true) do |_this|
       pp _this
     end
-    # @m_callback[:vtbl][:capture_frame] = Proc.new do |_this, _data, _size|
-    @m_callback[:vtbl][:capture_frame] = FFI::Function.new(:void, [:pointer, :pointer, :uint32], blocking: true) do |_this, _data, _size|
+    # @cb[:capture_frame] = Proc.new do |_this, _data, _size|
+    @cb[:capture_frame] = FFI::Function.new(:void, [:pointer, :pointer, :uint32], blocking: true) do |_this, _data, _size|
       pp _this
     end
-    pp @m_callback[:vtbl][:screen_shot]
+    @cb = @cb
+    pp @cb[:screen_shot]
     
-
     init = Bgfx_init_t.new
     init[:type] = BgfxUtils.platform_renderer_type # OpenGL / Metal
     init[:vendorId] = Bgfx::Pci_Id_None
@@ -158,7 +159,8 @@ class Sample07 < Sample
     init[:limits][:maxEncoders] = 1
     init[:limits][:transientVbSize] = 6 << 20
     init[:limits][:transientIbSize] = 2 << 20
-    # init[:callback] = @m_callback # TODO
+    init[:callback] = @m_callback # @m_callback # TODO
+    pp Bgfx_callback_interface_t.size
 
     @bgfx_init_success = Bgfx.init(init)
     warn('Failed to initialize Bgfx') unless @bgfx_init_success

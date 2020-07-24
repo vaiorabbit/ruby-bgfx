@@ -40,25 +40,25 @@ end # module Bgfx
 # Callbacks
 #
 
-class Bgfx_callback_interface_t < FFI::Struct
-  layout(:vtbl, :pointer) # bgfx_callback_vtbl_s*
-end
-
 class Bgfx_callback_vtbl_t < FFI::Struct
   layout(
-    :fatal,                 callback([Bgfx_callback_interface_t.ptr, :string, :uint16, :uint32, :string], :void), # uint32 == Bgfx::Fatal
-    :trace_vargs,           callback([Bgfx_callback_interface_t.ptr, :string, :uint16, :string, :varargs], :void),
-    :profiler_begin,        callback([Bgfx_callback_interface_t.ptr, :string, :uint32, :string, :uint16], :void),
-    :profiler_begin_literal,callback([Bgfx_callback_interface_t.ptr, :string, :uint32, :string, :uint16], :void),
-    :profiler_end,          callback([Bgfx_callback_interface_t.ptr], :void),
-    :cache_read_size,       callback([Bgfx_callback_interface_t.ptr, :uint64], :uint32),
-    :cache_read,            callback([Bgfx_callback_interface_t.ptr, :uint64, :pointer, :uint32], :bool),
-    :cache_write,           callback([Bgfx_callback_interface_t.ptr, :uint64, :pointer, :uint32], :void),
-    :screen_shot,           callback([Bgfx_callback_interface_t.ptr, :string, :uint32, :uint32, :uint32, :pointer, :uint32, :bool], :void),
-    :capture_begin,         callback([Bgfx_callback_interface_t.ptr, :uint32, :uint32, :uint32, :bool], :void),
-    :capture_end,           callback([Bgfx_callback_interface_t.ptr], :void),
-    :capture_frame,         callback([Bgfx_callback_interface_t.ptr, :pointer, :uint32], :void)
+    :fatal,                 callback([:pointer, :string, :uint16, :uint32, :string], :void), # uint32 == Bgfx::Fatal
+    :trace_vargs,           callback([:pointer, :string, :uint16, :string, :varargs], :void),
+    :profiler_begin,        callback([:pointer, :string, :uint32, :string, :uint16], :void),
+    :profiler_begin_literal,callback([:pointer, :string, :uint32, :string, :uint16], :void),
+    :profiler_end,          callback([:pointer], :void),
+    :cache_read_size,       callback([:pointer, :uint64], :uint32),
+    :cache_read,            callback([:pointer, :uint64, :pointer, :uint32], :bool),
+    :cache_write,           callback([:pointer, :uint64, :pointer, :uint32], :void),
+    :screen_shot,           callback([:pointer, :string, :uint32, :uint32, :uint32, :pointer, :uint32, :bool], :void),
+    :capture_begin,         callback([:pointer, :uint32, :uint32, :uint32, :bool], :void),
+    :capture_end,           callback([:pointer], :void),
+    :capture_frame,         callback([:pointer, :pointer, :uint32], :void)
   )
+end
+
+class Bgfx_callback_interface_t < FFI::Struct
+  layout(:vtbl, Bgfx_callback_vtbl_t.by_ref)
 end
 
 class Bgfx_allocator_interface_t < FFI::Struct
@@ -268,8 +268,10 @@ end
 
 local function convert_type(arg, array_as_pointer)
    local ctype = arg.ctype:gsub("%s%*", "*")
-   if arg.fulltype == "bx::AllocatorI*" or arg.fulltype == "CallbackI*" or arg.fulltype == "ReleaseFn" then
+   if arg.fulltype == "bx::AllocatorI*" or arg.fulltype == "ReleaseFn" then
       ctype = ":pointer"
+   elseif arg.fulltype == "CallbackI*" then
+      ctype = "Bgfx_callback_interface_t.ptr"
    elseif hasPrefix(ctype, "const char") and hasSuffix(ctype, "*") then
       ctype = ":string"
    elseif string.match(ctype, "*") then

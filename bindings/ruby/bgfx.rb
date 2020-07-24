@@ -769,9 +769,8 @@ class Bgfx_callback_vtbl_t < FFI::Struct
   )
 end
 
-
 class Bgfx_callback_interface_t < FFI::Struct
-  layout(:vtbl, Bgfx_callback_vtbl_t.by_value) # bgfx_callback_vtbl_s*
+  layout(:vtbl, Bgfx_callback_vtbl_t.by_ref)
 end
 
 class Bgfx_allocator_interface_t < FFI::Struct
