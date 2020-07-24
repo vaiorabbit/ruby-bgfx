@@ -15,6 +15,7 @@ require_relative '03/raymarch'
 require_relative '04/mesh'
 require_relative '05/instancing'
 require_relative '06/bump'
+require_relative '07/callback'
 
 include RMath3D
 
@@ -79,6 +80,7 @@ class Application
     ImGui::ImplSDL2_Init(@window)
 
     @samples = [
+      Sample07.new,
       Sample00.new,
       Sample01.new,
       Sample02.new,

@@ -104,7 +104,7 @@ module ImGui
     Bgfx::destroy_program(@@m_imageProgram) if @@m_imageProgram != nil
     Bgfx::destroy_program(@@m_program) if @@m_program != nil
 
-    Bgfx::destroy_vertex_layout(@@m_layout)
+    Bgfx::destroy_vertex_layout(@@m_layout) if @@m_layout != nil
 
     @@m_texture = nil
     @@s_tex = nil
