@@ -773,6 +773,15 @@ class Bgfx_callback_vtbl_t < FFI::Struct
   )
 end
 
+class Bgfx_allocator_interface_t < FFI::Struct
+  layout(:vtbl, :pointer) # bgfx_allocator_vtbl_s*
+end
+
+class Bgfx_allocator_vtbl_t < FFI::Struct
+  layout(
+    :realloc, callback([Bgfx_allocator_interface_t.ptr, :pointer, :size_t, :size_t, :string, :uint32], :pointer)
+  )
+end
 
 #
 # Structs
