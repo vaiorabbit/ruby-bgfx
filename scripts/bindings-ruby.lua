@@ -37,6 +37,32 @@ end # module Bgfx
 
 
 #
+# Callbacks
+#
+
+class Bgfx_callback_interface_t < FFI::Struct
+  layout(:vtbl, :pointer) # bgfx_callback_vtbl_s*
+end
+
+class Bgfx_callback_vtbl_t < FFI::Struct
+  layout(
+    :fatal,                 callback([Bgfx_callback_interface_t.ptr, :string, :uint16, :uint32, :string], :void), # uint32 == Bgfx::Fatal
+    :trace_vargs,           callback([Bgfx_callback_interface_t.ptr, :string, :uint16, :string, :varargs], :void),
+    :profiler_begin,        callback([Bgfx_callback_interface_t.ptr, :string, :uint32, :string, :uint16], :void),
+    :profiler_begin_literal,callback([Bgfx_callback_interface_t.ptr, :string, :uint32, :string, :uint16], :void),
+    :profiler_end,          callback([Bgfx_callback_interface_t.ptr], :void),
+    :cache_read_size,       callback([Bgfx_callback_interface_t.ptr, :uint64], :uint32),
+    :cache_read,            callback([Bgfx_callback_interface_t.ptr, :uint64, :pointer, :uint32], :bool),
+    :cache_write,           callback([Bgfx_callback_interface_t.ptr, :uint64, :pointer, :uint32], :void),
+    :screen_shot,           callback([Bgfx_callback_interface_t.ptr, :string, :uint32, :uint32, :uint32, :pointer, :uint32, :bool], :void),
+    :capture_begin,         callback([Bgfx_callback_interface_t.ptr, :uint32, :uint32, :uint32, :bool], :void),
+    :capture_end,           callback([Bgfx_callback_interface_t.ptr], :void),
+    :capture_frame,         callback([Bgfx_callback_interface_t.ptr, :pointer, :uint32], :void)
+  )
+end
+
+
+#
 # Structs
 #
 
@@ -218,7 +244,7 @@ function gen.gen()
                                    elseif what == "modulefuncs" then
                                       -- Wrapper functions
                                       generate(tmp, idl["funcs"], converter["module_funcs"])
-                                      return table.concat(tmp, "\n")
+                                      return table.concat(tmp)
                                    end
    end)
    return r
@@ -640,7 +666,7 @@ function converter.module_funcs(func)
 
    if func.comments ~= nil then
       -- comments
-      yield(indent .. "#")
+      yield("\n" .. indent .. "#\n")
       for _, line in ipairs(func.comments) do
          local line = line:gsub("@remarks", "Remarks:")
          line = line:gsub("@remark", "Remarks:")
@@ -657,21 +683,21 @@ function converter.module_funcs(func)
       end
 
       if hasParamsComments then
-         yield(indent .. "# Params:")
+         yield(indent .. "# Params:\n")
       end
 
       for _, arg in ipairs(func.args) do
          if arg.comment ~= nil then
-            yield(indent .. "# " .. convert_name(arg.name) .. " = " .. arg.comment[1])
+            yield(indent .. "# " .. convert_name(arg.name) .. " = " .. arg.comment[1] .. "\n")
             for i, comment in ipairs(arg.comment) do
                if (i > 1) then
-                  yield(indent .. "# " .. comment)
+                  yield(indent .. "# " .. comment .. "\n")
                end
             end
          end
       end
 
-      yield(indent .. "#")
+      yield(indent .. "#\n")
    end
 
    -- codes
@@ -692,9 +718,9 @@ function converter.module_funcs(func)
    end
 
    entry_point = "bgfx_" .. func.cname
-   yield(indent .. "def self." .. func.cname .. "(" .. table.concat(args_with_defaults, ", ") .. ")")
-   yield(indent .. indent .. "return " .. entry_point .. "(" .. table.concat(args, ", ") .. ")")
-   yield(indent .. "end")
+   yield(indent .. "def self." .. func.cname .. "(" .. table.concat(args_with_defaults, ", ") .. ")\n")
+   yield(indent .. indent .. entry_point .. "(" .. table.concat(args, ", ") .. ")\n")
+   yield(indent .. "end\n")
 end
 
 ----------------------------------------------------------------------------------------------------
