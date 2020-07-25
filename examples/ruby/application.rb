@@ -80,7 +80,7 @@ class Application
     ImGui::ImplSDL2_Init(@window)
 
     @samples = [
-      Sample07.new,
+      # Sample07.new, # WIP
       Sample00.new,
       Sample01.new,
       Sample02.new,
