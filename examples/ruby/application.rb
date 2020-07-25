@@ -80,7 +80,6 @@ class Application
     ImGui::ImplSDL2_Init(@window)
 
     @samples = [
-      Sample07.new,
       Sample00.new,
       Sample01.new,
       Sample02.new,
@@ -88,6 +87,7 @@ class Application
       Sample04.new,
       Sample05.new,
       Sample06.new,
+      # Sample07.new, # [NOTE] Ruby port of '07-callback' example is quite unstable. Do NOT use this for now.
     ]
     @current_sample = nil
     @sample_index = 0

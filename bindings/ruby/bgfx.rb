@@ -755,7 +755,7 @@ end # module Bgfx
 class Bgfx_callback_vtbl_t < FFI::Struct
   layout(
     :fatal,                 callback([:pointer, :string, :uint16, :uint32, :string], :void), # uint32 == Bgfx::Fatal
-    :trace_vargs,           callback([:pointer, :string, :uint16, :string, :varargs], :void),
+    :trace_vargs,           callback([:pointer, :string, :uint16, :string, :pointer], :void), # :pointer == va_list : Note that ':varargs' cannot be used as a callback argument
     :profiler_begin,        callback([:pointer, :string, :uint32, :string, :uint16], :void),
     :profiler_begin_literal,callback([:pointer, :string, :uint32, :string, :uint16], :void),
     :profiler_end,          callback([:pointer], :void),
