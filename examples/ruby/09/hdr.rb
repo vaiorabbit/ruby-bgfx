@@ -1,6 +1,6 @@
 # coding: utf-8
 #
-# Ref.: bgfx/examples/04-mesh/mesh.cpp
+# Ref.: bgfx/examples/09-hdr/hdr.cpp
 #
 
 require_relative '../common/sample'
@@ -8,10 +8,47 @@ require_relative '../common/mesh'
 
 ################################################################################
 
-class Sample04 < Sample
+class Sample09 < Sample
+
+  class PosColorTexCoord0Vertex < FFI::Struct
+    @@ms_layout = nil
+
+    def self.ms_layout
+      @@ms_layout
+    end
+
+    layout(
+      :m_x, :float,
+      :m_y, :float,
+      :m_z, :float,
+      :m_rgba, :uint32,
+      :m_u, :float,
+      :m_v, :float
+    )
+
+    def self.init()
+      if @@ms_layout == nil
+        @@ms_layout = Bgfx_vertex_layout_t.new
+        @@ms_layout.begin()
+        @@ms_layout.add(Bgfx::Attrib::Position, 3, Bgfx::AttribType::Float)
+        @@ms_layout.add(Bgfx::Attrib::Color0, 4, Bgfx::AttribType::Uint8, true)
+        @@ms_layout.add(Bgfx::Attrib::TexCoord0, 2, Bgfx::AttribType::Float)
+        @@ms_layout.end
+      end
+    end
+  end
+
+  def self.screenSpaceQuat( _textureWidth,  _textureHeight,  _originBottomLeft = false,  _width = 1.0,  _height = 1.0)
+  end
+
+  def self.setOffsets2x2Lum(_handle,  _width,  _height)
+  end
+
+  def self.setOffsets4x4Lum(_handle,  _width,  _height)
+  end
 
   def initialize
-    super("04-mesh", "https://bkaradzic.github.io/bgfx/examples.html#mesh", "Loading meshes.")
+    super("09-hdr", "https://bkaradzic.github.io/bgfx/examples.html#hdr", "Using multiple views with frame buffers, and view order remapping.")
     @ndc_homogeneous = true
 
     @u_time = nil
@@ -40,6 +77,8 @@ class Sample04 < Sample
 
     Bgfx::set_debug(debug)
     Bgfx::set_view_clear(0, Bgfx::Clear_Color|Bgfx::Clear_Depth, 0x303080ff, 1.0, 0)
+
+    PosColorTexCoord0Vertex.init()
 
     @u_time = Bgfx::create_uniform("u_time", Bgfx::UniformType::Vec4)
     @m_program = BgfxUtils.load_program("vs_mesh", "fs_mesh", "./" )

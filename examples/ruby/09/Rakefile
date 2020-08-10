@@ -1,0 +1,55 @@
+require 'rake/clean'
+
+ShaderSources = Dir.glob("[vf]s*.sc")
+VaryingDef = 'varying.def.sc'
+ShaderInputPath = '.'
+ShaderOutputPath = '../shaders'
+
+####################################################################################################
+
+ShaderC = "/path/to/shadercRelease"
+ShaderCompilerIncludes = ["/path/to/bgfx/src", "/path/to/bgfx/examples/common"]
+
+Platform, ShaderLang = case RUBY_PLATFORM
+                       when /mswin|msys|mingw|cygwin/
+                         ["windows", "glsl"]
+                       when /darwin/
+                         ["osx", "metal"]
+                       else
+                         raise RuntimeError, "Unknown OS: #{RUBY_PLATFORM}"
+                       end
+
+ShaderBinaries = ShaderSources.map{|sc| "#{File.basename(sc, '.sc')}.bin"}
+
+####################################################################################################
+
+task 'default' => 'build_shaders'
+task 'build_shaders' => ShaderBinaries
+
+def compile_shader(src_sc, dst_bin, varying_def, platform, renderer_api, shader_type)
+  shaderc_command_line = [
+    ShaderC,
+    ShaderCompilerIncludes.collect{|incpath| "-i #{incpath}"}.join(' '),
+    "-f", src_sc,
+    "-o", dst_bin,
+    "--varyingdef", varying_def,
+    "--platform", platform,
+    #"-p", renderer_api,
+    "--type", shader_type,
+    #"--verbose",
+  ]
+
+  output = `#{shaderc_command_line.join(' ')}`
+  puts output unless output.empty?
+end
+
+rule ".bin" => ".sc" do |t|
+  shader_type = if File.basename(t.source).start_with?("vs")
+                  "vertex"
+                elsif File.basename(t.source).start_with?("fs")
+                  "fragment"
+                end
+  compile_shader("#{ShaderInputPath}/#{t.source}", "#{ShaderOutputPath}/#{ShaderLang}/#{t.name}", VaryingDef, Platform, ShaderLang, shader_type)
+end
+
+CLEAN.include(FileList[*ShaderBinaries.map{|sb| "#{ShaderOutputPath}/#{ShaderLang}/#{sb}"}])
