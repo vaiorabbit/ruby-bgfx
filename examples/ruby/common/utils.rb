@@ -38,13 +38,13 @@ module BgfxUtils
 
   ################################################################################
 
-  def self.load_texture(name, runtime_path = "../runtime/")
+  def self.load_texture(name, flags = Bgfx::Texture_None|Bgfx::Sampler_None, runtime_path = "../runtime/")
     texture_raw = IO.binread(runtime_path + name)
     texture_mem = FFI::MemoryPointer.from_string(texture_raw)
 
     return Bgfx::create_texture(
       Bgfx::make_ref(texture_mem, texture_mem.size),
-      Bgfx::Texture_None|Bgfx::Sampler_None
+      flags
     )
   end
 
