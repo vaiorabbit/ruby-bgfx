@@ -353,9 +353,15 @@ class Sample09 < Sample
 
     Bgfx::touch(0)
 
-    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.rotationY(@time).to_a)
+    #mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.rotationY(@time).to_a)
+    @eye.setElements(0.0, 1.0, -2.5)
+    @at.setElements(0.0, 1.0, 0.0)
+    @up.setElements(0.0,  1.0,  0.0)
+    @mtx_view.lookAtLH( @eye, @at, @up )
+    @view.write_array_of_float(@mtx_view.to_a)
 
-    state = Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Lequal | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa
+
+    #state = Bgfx::State_Write_Rgb | Bgfx::State_Write_A | Bgfx::State_Write_Z | Bgfx::State_Depth_Test_Lequal | Bgfx::State_Cull_Ccw | Bgfx::State_Msaa
 
     shuffle = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].shuffle
     hdrSkybox       = shuffle[0]
@@ -414,6 +420,9 @@ class Sample09 < Sample
     invalid[:idx] = Bgfx::InvalidHandleIdx
     Bgfx::set_view_frame_buffer(hdrHBlurTonemap, invalid)
 
+    mtx_ortho = RMtx4.new.orthoOffCenterLH(0.0, 1.0, 1.0, 0.0, 0.0, 100.0, @ndc_homogeneous)
+    mtx_ortho_mem = FFI::MemoryPointer.new(:float, 16).write_array_of_float(mtx_ortho.to_a)
+
     order_src = [
       hdrSkybox,
       hdrMesh,
@@ -429,21 +438,25 @@ class Sample09 < Sample
     order_mem = FFI::MemoryPointer.new(:uint16, order_src.length).write_array_of_uint16(order_src)
     Bgfx::set_view_order(0, order_src.length, order_mem)
 
-    mtx_ortho = RMtx4.new.orthoOffCenterLH(0.0, 1.0, 1.0, 0.0, 0.0, 100.0, @ndc_homogeneous)
-    mtx_ortho_mem = FFI::MemoryPointer.new(:float, 16).write_array_of_float(mtx_ortho.to_a)
-
     # Set view and projection matrix for view 0.
     order_src.length.times do |ii|
       Bgfx::set_view_transform(ii, nil, mtx_ortho_mem)
     end
 
-    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.rotationY(@time).to_a)
-
+    mtx = RMtx4.new.rotationY(@time) #FFI::MemoryPointer.new(:float, 16).write_array_of_float(RMtx4.new.rotationY(@time).to_a)
+    eye = RVec3.new
+    eye.setElements(0.0, 1.0, -2.5)
+    @eye = eye.transformCoord!(mtx)
+    @mtx_view.lookAtLH( @eye, @at, @up )
+    @view.write_array_of_float(@mtx_view.to_a)
+   
     # Set view and projection matrix for view hdrMesh.
     Bgfx::set_view_transform(hdrMesh, @view, @proj)
 
     tonemap_src = [@m_middleGray, @m_white * @m_white, @m_threshold, @time]
     tonemap = FFI::MemoryPointer.new(:float, 4).write_array_of_float(tonemap_src)
+
+    mtx = FFI::MemoryPointer.new(:float, 16).write_array_of_float(mtx.to_a)
 
     # Render skybox into view hdrSkybox.
     Bgfx::set_texture(0, @s_texCube, @m_uffizi)
@@ -455,7 +468,7 @@ class Sample09 < Sample
     # Render m_mesh into view hdrMesh.
     Bgfx::set_texture(0, @s_texCube, @m_uffizi)
     Bgfx::set_uniform(@u_tonemap, tonemap)
-    @m_mesh.submit(hdrMesh, @m_meshProgram, mtx) # meshSubmit(m_mesh, hdrMesh, m_meshProgram, nil)
+    @m_mesh.submit(hdrMesh, @m_meshProgram, nil) # meshSubmit(m_mesh, hdrMesh, m_meshProgram, nil)
 
     # Calculate luminance.
     setOffsets2x2Lum(@u_offset, 128, 128)
@@ -520,6 +533,9 @@ class Sample09 < Sample
       Bgfx::blit(hdrHBlurTonemap, @m_rb, 0, 0, 0, 0, Bgfx::get_texture(@m_lum[4]), 0, 0, 0, 0, 0xffff, 0xffff, 0xffff)
       bgra8 = FFI::MemoryPointer.new(:uint32, 1)
       Bgfx::read_texture(@m_rb, bgra8)
+      pp bgra8.read_uint32
+      bgra = FFI::Pointer.new(bgra8)
+      pp bgra.get(:uint8, 3)
     end
 
     Bgfx::frame()

@@ -21,7 +21,7 @@ require_relative '09/hdr'
 include RMath3D
 
 SDL2.load_lib(SampleUtils.sdl2_dll_path())
-Bgfx.load_lib(SampleUtils.bgfx_dll_path())
+Bgfx.load_lib(SampleUtils.bgfx_dll_path("Debug"))
 ImGui.load_lib(SampleUtils.imgui_dll_path())
 
 # RubyProf::measure_mode = RubyProf::WALL_TIME
